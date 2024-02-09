@@ -44,9 +44,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ToastView {
     private static class Toast {
-        private View anchor;
-        private String msg;
-        private int duration;
+        private final View anchor;
+        private final String msg;
+        private final int duration;
 
         private Toast(View anchor, String msg, int duration) {
             this.anchor = anchor;
@@ -55,10 +55,9 @@ public class ToastView {
         }
     }
 
-	private static View mReaderView;
-    private static LinkedBlockingQueue<Toast> queue = new LinkedBlockingQueue<>();
-    private static AtomicBoolean showing = new AtomicBoolean(false);
-    private static Handler mHandler = new Handler();
+    private static final LinkedBlockingQueue<Toast> queue = new LinkedBlockingQueue<>();
+    private static final AtomicBoolean showing = new AtomicBoolean(false);
+    private static final Handler mHandler = new Handler();
     private static PopupWindow window = null;
 
     private static final Runnable handleDismiss = () -> {
@@ -70,7 +69,6 @@ public class ToastView {
 
     static int fontSize = 24;
     public static void showToast(View anchor, String msg, int duration, int textSize) {
-    	mReaderView = anchor;
     	fontSize = textSize;
         try {
             queue.put(new Toast(anchor, msg, duration));

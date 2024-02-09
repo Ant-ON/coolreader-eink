@@ -30,7 +30,6 @@
 
 package org.coolreader.crengine;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -40,7 +39,6 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.text.ClipboardManager;
 import android.util.Log;
@@ -290,7 +288,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		mEngine.post(task);
 	}
 
-	private abstract class Task implements Engine.EngineTask {
+	private abstract static class Task implements Engine.EngineTask {
 
 		public void done() {
 			// override to do something useful
@@ -303,7 +301,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		}
 	}
 
-	static class Sync<T> extends Object {
+	static class Sync<T> {
 		private volatile T result = null;
 		private volatile boolean completed = false;
 
@@ -512,7 +510,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				long tkeDt = trackedKeyEvent.getDownTime();
 				long eDt = event.getDownTime();
 				// empirical value (could be changed or moved to constant)
-				long delta = 300l;
+				long delta = 300L;
 				// time difference between tracked and current event
 				long diff = eDt - tkeDt;
 				// needed for correct function on HTC Desire for CENTER_KEY
@@ -530,7 +528,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 	private KeyEvent trackedKeyEvent = null;
 	private ReaderAction actionToRepeat = null;
 	private boolean repeatActionActive = false;
-	private SparseArray<Long> keyDownTimestampMap = new SparseArray<Long>();
+	private final SparseArray<Long> keyDownTimestampMap = new SparseArray<Long>();
 
 	private int translateKeyCode(int keyCode) {
 		if (DeviceInfo.REVERT_LANDSCAPE_VOLUME_KEYS && (mActivity.getScreenOrientation() & 1) != 0) {
@@ -644,12 +642,12 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 	public void sendQuotationInEmail(Selection sel) {
 		StringBuilder buf = new StringBuilder();
 		if (mBookInfo.getFileInfo().authors != null)
-			buf.append("|" + mBookInfo.getFileInfo().authors + "\n");
+			buf.append("|").append(mBookInfo.getFileInfo().authors).append("\n");
 		if (mBookInfo.getFileInfo().title != null)
-			buf.append("|" + mBookInfo.getFileInfo().title + "\n");
+			buf.append("|").append(mBookInfo.getFileInfo().title).append("\n");
 		if (sel.chapter != null && sel.chapter.length() > 0)
-			buf.append("|" + sel.chapter + "\n");
-		buf.append(sel.text + "\n");
+			buf.append("|").append(sel.chapter).append("\n");
+		buf.append(sel.text).append("\n");
 		mActivity.sendBookFragment(mBookInfo, buf.toString());
 	}
 
@@ -951,10 +949,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 	private void startImageViewer(ImageInfo image) {
 		currentImageViewer = new ImageViewer(image);
 		drawPage();
-	}
-
-	private boolean isImageViewMode() {
-		return currentImageViewer != null;
 	}
 
 	private void stopImageViewer() {
@@ -1594,8 +1588,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					if (shortcut == 0)
 						s = mActivity.getString(R.string.toast_position_bookmark_is_set);
 					else {
-						s = mActivity.getString(R.string.toast_shortcut_bookmark_is_set);
-						s.replace("$1", String.valueOf(shortcut));
+						s = mActivity.getString(R.string.toast_shortcut_bookmark_is_set).replace("$1", String.valueOf(shortcut));
 					}
 					highlightBookmarks();
 					mActivity.showToast(s);
@@ -1686,8 +1679,8 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			return;
 		final StringBuilder buf = new StringBuilder();
 //		if (mActivity.isFullscreen()) {
-		buf.append(Utils.formatTime(mActivity, System.currentTimeMillis()) + " ");
-		buf.append(" [" + mBatteryChargeLevel + "%]\n");
+		buf.append(Utils.formatTime(mActivity, System.currentTimeMillis())).append(" ");
+		buf.append(" [").append(mBatteryChargeLevel).append("%]\n");
 //		}
 		execute(new Task() {
 			Bookmark bm;
@@ -1698,10 +1691,10 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				if (bm != null) {
 					PositionProperties prop = doc.getPositionProps(bm.getStartPos(), true);
 					if (prop.pageMode != 0) {
-						buf.append("" + (prop.pageNumber + 1) + " / " + prop.pageCount + "   ");
+						buf.append(prop.pageNumber + 1).append(" / ").append(prop.pageCount).append("   ");
 					}
 					int percent = (int) (10000 * (long) prop.y / prop.fullHeight);
-					buf.append("" + (percent / 100) + "." + (percent % 100) + "%");
+					buf.append(percent / 100).append(".").append(percent % 100).append("%");
 
 					// Show chapter details if book has more than one chapter
 					TOCItem toc = doc.getTOC();
@@ -1725,8 +1718,8 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 						}
 
 						if (chapterName != null && chapterName.length() > 0)
-							buf.append("\n" + chapterName);
-						if (chapterPos != null && chapterPos.length() > 0)
+							buf.append("\n").append(chapterName);
+						if (chapterPos != null)
 							buf.append(chapterPos);
 					}
 				}
@@ -2171,17 +2164,13 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				}
 			} else {
 				int page1 = currPos.pageNumber;
-				int page2 = currPos.pageNumber + 1;
-				if (page2 < 0 || page2 >= currPos.pageCount) {
+				int page2 = page1 + 1;
+				if (page1 < 0 || page2 >= currPos.pageCount) {
 					currentAnimation = null;
 					return false;
 				}
 				image1 = preparePageImage(0);
 				image2 = preparePageImage(1);
-				if (page1 == page2) {
-					log.v("PageViewAnimation -- cannot start animation: not moved");
-					return false;
-				}
 				if (image1 == null || image2 == null) {
 					log.v("PageViewAnimation -- cannot start animation: page image is null");
 					return false;
@@ -2556,9 +2545,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		}
 	}
 
-	boolean firstShowBrowserCall = true;
-
-
 	private TTSToolbarDlg ttsToolbar;
 
 	public void pauseTTS() {
@@ -2738,14 +2724,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		drawPage();
 	}
 
-	public static boolean eq(Object obj1, Object obj2) {
-		if (obj1 == null && obj2 == null)
-			return true;
-		if (obj1 == null || obj2 == null)
-			return false;
-		return obj1.equals(obj2);
-	}
-
 	public void saveSettings(Properties settings) {
 		mActivity.setSettings(settings, 0, false);
 	}
@@ -2780,16 +2758,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 
 	public Properties getSettings() {
 		return new Properties(mSettings);
-	}
-
-	static public int stringToInt(String value, int defValue) {
-		if (value == null)
-			return defValue;
-		try {
-			return Integer.valueOf(value);
-		} catch (NumberFormatException e) {
-			return defValue;
-		}
 	}
 
 	private String getManualFileName() {
@@ -2849,7 +2817,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		} else if (key.equals(PROP_APP_BOUNCE_TAP_INTERVAL)) {
 			mBounceTapInterval = Utils.parseInt(value, -1, 50, 250);
 		} else if (key.equals(PROP_APP_GESTURE_PAGE_FLIPPING)) {
-			mGesturePageFlipsPerFullSwipe = Integer.valueOf(value);
+			mGesturePageFlipsPerFullSwipe = Integer.parseInt(value);
 		} else if (key.equals(PROP_PAGE_VIEW_MODE)) {
 			mIsPageMode = flg;
 		} else if (key.equals(PROP_APP_SECONDARY_TAP_ACTION_TYPE)) {
@@ -2901,7 +2869,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				viewMode = flg ? ViewMode.PAGES : ViewMode.SCROLL;
 			} else if (PROP_APP_SCREEN_ORIENTATION.equals(key)
 					|| PROP_PAGE_ANIMATION.equals(key)
-					|| PROP_PAGE_VIEW_MODE.equals(key)
 					|| PROP_CONTROLS_ENABLE_VOLUME_KEYS.equals(key)
 					|| PROP_APP_SHOW_COVERPAGES.equals(key)
 					|| PROP_APP_COVERPAGE_SIZE.equals(key)
@@ -3020,16 +2987,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			byte[] data = mEngine.getImageData(currentBackgroundTexture);
 			doc.setPageBackgroundTexture(data, currentBackgroundTexture.tiled ? 1 : 0);
 
-			//File historyDir = activity.getDir("settings", Context.MODE_PRIVATE);
-			//File historyDir = new File(Environment.getExternalStorageDirectory(), ".cr3");
-			//historyDir.mkdirs();
-			//File historyFile = new File(historyDir, "cr3hist.ini");
-
-			//File historyFile = new File(activity.getDir("settings", Context.MODE_PRIVATE), "cr3hist.ini");
-			//if ( historyFile.exists() ) {
-			//log.d("Reading history from file " + historyFile.getAbsolutePath());
-			//readHistoryInternal(historyFile.getAbsolutePath());
-			//}
 			String css = mEngine.loadResourceUtf8(R.raw.fb2);
 			if (css != null && css.length() > 0)
 				doc.setStylesheet(css);
@@ -3293,11 +3250,8 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			return bmp;
 		}
 
-		public synchronized void compact() {
-			while (freeList.size() > 0) {
-				//freeList.get(0).recycle();//20110109
-				freeList.remove(0);
-			}
+		public synchronized void clear() {
+			freeList.clear();
 		}
 
 		public synchronized void release(Bitmap bmp) {
@@ -3306,16 +3260,12 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					freeList.add(bmp);
 					usedList.remove(i);
 					while (freeList.size() > MAX_FREE_LIST_SIZE) {
-						//freeList.get(0).recycle(); //20110109
-						Bitmap b = freeList.remove(0);
-						//b.recycle();
+						freeList.remove(0);
 					}
 					log.d("BitmapFactory: bitmap released, used size = " + usedList.size() + ", free size=" + freeList.size());
 					return;
 				}
 			}
-			// unknown bitmap, just recycle
-			//bmp.recycle();//20110109
 		}
 	}
 
@@ -4079,8 +4029,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		});
 	}
 
-	private volatile int updateSerialNumber = 0;
-
 	private class AnimationUpdate {
 		private int x;
 		private int y;
@@ -4161,20 +4109,18 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 	}
 
 	interface ViewAnimationControl {
-		public void update(int x, int y);
+		void update(int x, int y);
 
-		public void stop(int x, int y);
+		void stop(int x, int y);
 
-		public void animate();
+		void animate();
 
-		public void move(int duration, boolean accelerated);
+		void move(int duration, boolean accelerated);
 
-		public boolean isStarted();
+		boolean isStarted();
 
-		abstract void draw(Canvas canvas);
+		void draw(Canvas canvas);
 	}
-
-//	private Object surfaceLock = new Object();
 
 	private static final int[] accelerationShape = new int[]{
 			0, 6, 24, 54, 95, 146, 206, 273, 345, 421, 500, 578, 654, 726, 793, 853, 904, 945, 975, 993, 1000
@@ -4440,12 +4386,12 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 	private final static int SIN_TABLE_SCALE = 0x10000;
 	private final static int PI_DIV_2 = (int) (Math.PI / 2 * SIN_TABLE_SCALE);
 	/// sin table, for 0..PI/2
-	private static int[] SIN_TABLE = new int[SIN_TABLE_SIZE + 1];
-	private static int[] ASIN_TABLE = new int[SIN_TABLE_SIZE + 1];
+	private static final int[] SIN_TABLE = new int[SIN_TABLE_SIZE + 1];
+	private static final int[] ASIN_TABLE = new int[SIN_TABLE_SIZE + 1];
 	// mapping of 0..1 shift to angle
-	private static int[] SRC_TABLE = new int[SIN_TABLE_SIZE + 1];
+	private static final int[] SRC_TABLE = new int[SIN_TABLE_SIZE + 1];
 	// mapping of 0..1 shift to sin(angle)
-	private static int[] DST_TABLE = new int[SIN_TABLE_SIZE + 1];
+	private static final int[] DST_TABLE = new int[SIN_TABLE_SIZE + 1];
 
 	// for dx=0..1 find such alpha (0..pi/2) that alpha - sin(alpha) = dx
 	private static double shiftfn(double dx) {
@@ -4588,19 +4534,17 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			int dx = srcdx - dstdx;
 			int maxdistortdx = srcdx * DISTORT_PART_PERCENT / 100;
 			int maxdx = maxdistortdx * (PI_DIV_2 - SIN_TABLE_SCALE) / SIN_TABLE_SCALE;
-			int maxdistortsrc = maxdistortdx * PI_DIV_2 / SIN_TABLE_SCALE;
 
-			int distortdx = dx < maxdistortdx ? dx : maxdistortdx;
-			int distortsrcstart = -1;
-			int distortsrcend = -1;
-			int distortdststart = -1;
-			int distortdstend = -1;
-			int distortanglestart = -1;
-			int distortangleend = -1;
-			int normalsrcstart = -1;
-			int normalsrcend = -1;
-			int normaldststart = -1;
-			int normaldstend = -1;
+			int distortdx = Math.min(dx, maxdistortdx);
+			int distortsrcstart;
+			int distortdststart;
+			int distortdstend;
+			int distortanglestart;
+			int distortangleend;
+			int normalsrcstart;
+			int normalsrcend;
+			int normaldststart;
+			int normaldstend;
 
 			if (dx < maxdx) {
 				// start
@@ -4609,7 +4553,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					index = DST_TABLE.length;
 				int dstv = DST_TABLE[index] * maxdistortdx / SIN_TABLE_SCALE;
 				distortdststart = distortsrcstart = dstdx - dstv;
-				distortsrcend = srcdx;
 				distortdstend = dstdx;
 				normalsrcstart = normaldststart = 0;
 				normalsrcend = distortsrcstart;
@@ -4620,7 +4563,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			} else if (dstdx > maxdistortdx) {
 				// middle
 				distortdststart = distortsrcstart = dstdx - maxdistortdx;
-				distortsrcend = distortsrcstart + maxdistortsrc;
 				distortdstend = dstdx;
 				normalsrcstart = normaldststart = 0;
 				normalsrcend = distortsrcstart;
@@ -4632,12 +4574,9 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				normalsrcstart = normaldststart = normalsrcend = normaldstend = -1;
 				distortdx = dstdx;
 				distortsrcstart = 0;
-				int n = maxdistortdx >= dstdx ? maxdistortdx - dstdx : 0;
-				distortsrcend = ASIN_TABLE[SIN_TABLE_SIZE * n / maxdistortdx] * maxdistortsrc / SIN_TABLE_SCALE;
 				distortdststart = 0;
 				distortdstend = dstdx;
 				distortangleend = PI_DIV_2;
-				n = maxdistortdx >= distortdx ? maxdistortdx - distortdx : 0;
 				distortanglestart = ASIN_TABLE[SIN_TABLE_SIZE * (maxdistortdx - distortdx) / maxdistortdx];
 			}
 
@@ -4785,7 +4724,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					//int step = delta<3 ? 1 : (delta<5 ? 2 : (delta<10 ? 3 : (delta<15 ? 6 : (delta<25 ? 10 : (delta<50 ? 15 : 30)))));
 					if (currShift < destShift)
 						currShift += step;
-					else if (currShift > destShift)
+					else
 						currShift -= step;
 					alog.v("PageViewAnimation.animate(" + currShift + " => " + destShift + "  step=" + step + ")");
 				}
@@ -4798,8 +4737,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 
 		public void draw(Canvas canvas) {
 			alog.v("PageViewAnimation.draw(" + currShift + ")");
-//			BitmapInfo image1 = mCurrentPageInfo;
-//			BitmapInfo image2 = mNextPageInfo;
 			if (image1.isReleased() || image2.isReleased())
 				return;
 			int w = image1.bitmap.getWidth();
@@ -4814,70 +4751,70 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 						int w2 = w / 2;
 						if (div < w2) {
 							// left - part of old page
-							Rect src1 = new Rect(0, 0, div, h);
-							Rect dst1 = new Rect(0, 0, div, h);
-							drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
+							Rect src = new Rect(0, 0, div, h);
+							Rect dst = new Rect(0, 0, div, h);
+							drawDimmedBitmap(canvas, image1.bitmap, src, dst);
 							// left, resized part of new page
-							Rect src2 = new Rect(0, 0, w2, h);
-							Rect dst2 = new Rect(div, 0, w2, h);
-							//canvas.drawBitmap(image2.bitmap, src2, dst2, null);
-							drawDistorted(canvas, image2.bitmap, src2, dst2, -1);
+							src.set(0, 0, w2, h);
+							dst.set(div, 0, w2, h);
+							//canvas.drawBitmap(image2.bitmap, src, dst, null);
+							drawDistorted(canvas, image2.bitmap, src, dst, -1);
 							// right, new page
-							Rect src3 = new Rect(w2, 0, w, h);
-							Rect dst3 = new Rect(w2, 0, w, h);
-							drawDimmedBitmap(canvas, image2.bitmap, src3, dst3);
+							src.set(w2, 0, w, h);
+							dst.set(w2, 0, w, h);
+							drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 
 						} else {
 							// left - old page
-							Rect src1 = new Rect(0, 0, w2, h);
-							Rect dst1 = new Rect(0, 0, w2, h);
-							drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
+							Rect src = new Rect(0, 0, w2, h);
+							Rect dst = new Rect(0, 0, w2, h);
+							drawDimmedBitmap(canvas, image1.bitmap, src, dst);
 							// right, resized old page
-							Rect src2 = new Rect(w2, 0, w, h);
-							Rect dst2 = new Rect(w2, 0, div, h);
-							//canvas.drawBitmap(image1.bitmap, src2, dst2, null);
-							drawDistorted(canvas, image1.bitmap, src2, dst2, 1);
+							src.set(w2, 0, w, h);
+							dst.set(w2, 0, div, h);
+							//canvas.drawBitmap(image1.bitmap, src, dst, null);
+							drawDistorted(canvas, image1.bitmap, src, dst, 1);
 							// right, new page
-							Rect src3 = new Rect(div, 0, w, h);
-							Rect dst3 = new Rect(div, 0, w, h);
-							drawDimmedBitmap(canvas, image2.bitmap, src3, dst3);
+							src.set(div, 0, w, h);
+							dst.set(div, 0, w, h);
+							drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 
 							if (div > 0 && div < w)
 								drawShadow(canvas, shadowRect);
 						}
 					} else {
-						Rect src1 = new Rect(0, 0, w, h);
-						Rect dst1 = new Rect(0, 0, w - currShift, h);
+						Rect src = new Rect(0, 0, w, h);
+						Rect dst = new Rect(0, 0, w - currShift, h);
 						//log.v("drawing " + image1);
-						//canvas.drawBitmap(image1.bitmap, src1, dst1, null);
-						drawDistorted(canvas, image1.bitmap, src1, dst1, 1);
-						Rect src2 = new Rect(w - currShift, 0, w, h);
-						Rect dst2 = new Rect(w - currShift, 0, w, h);
+						//canvas.drawBitmap(image1.bitmap, src, dst, null);
+						drawDistorted(canvas, image1.bitmap, src, dst, 1);
+						src.set(w - currShift, 0, w, h);
+						dst.set(w - currShift, 0, w, h);
 						//log.v("drawing " + image1);
-						drawDimmedBitmap(canvas, image2.bitmap, src2, dst2);
+						drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 
 						if (div > 0 && div < w)
 							drawShadow(canvas, shadowRect);
 					}
 				} else {
 					if (flipTwoPages) {
-						Rect src1 = new Rect(currShift, 0, w, h);
-						Rect dst1 = new Rect(0, 0, w - currShift, h);
+						Rect src = new Rect(currShift, 0, w, h);
+						Rect dst = new Rect(0, 0, w - currShift, h);
 						//log.v("drawing " + image1);
-						drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
-						Rect src2 = new Rect(0, 0, currShift, h);
-						Rect dst2 = new Rect(w - currShift, 0, w, h);
+						drawDimmedBitmap(canvas, image1.bitmap, src, dst);
+						src.set(0, 0, currShift, h);
+						dst.set(w - currShift, 0, w, h);
 						//log.v("drawing " + image1);
-						drawDimmedBitmap(canvas, image2.bitmap, src2, dst2);
+						drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 					} else {
-						Rect src1 = new Rect(currShift, 0, w, h);
-						Rect dst1 = new Rect(0, 0, w - currShift, h);
+						Rect src = new Rect(currShift, 0, w, h);
+						Rect dst = new Rect(0, 0, w - currShift, h);
 						//log.v("drawing " + image1);
-						drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
-						Rect src2 = new Rect(w - currShift, 0, w, h);
-						Rect dst2 = new Rect(w - currShift, 0, w, h);
+						drawDimmedBitmap(canvas, image1.bitmap, src, dst);
+						src.set(w - currShift, 0, w, h);
+						dst.set(w - currShift, 0, w, h);
 						//log.v("drawing " + image1);
-						drawDimmedBitmap(canvas, image2.bitmap, src2, dst2);
+						drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 					}
 				}
 			} else {
@@ -4889,63 +4826,63 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 						int w2 = w / 2;
 						if (div < w2) {
 							// left - part of old page
-							Rect src1 = new Rect(0, 0, div, h);
-							Rect dst1 = new Rect(0, 0, div, h);
-							drawDimmedBitmap(canvas, image2.bitmap, src1, dst1);
+							Rect src = new Rect(0, 0, div, h);
+							Rect dst = new Rect(0, 0, div, h);
+							drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 							// left, resized part of new page
-							Rect src2 = new Rect(0, 0, w2, h);
-							Rect dst2 = new Rect(div, 0, w2, h);
-							//canvas.drawBitmap(image1.bitmap, src2, dst2, null);
-							drawDistorted(canvas, image1.bitmap, src2, dst2, -1);
+							src.set(0, 0, w2, h);
+							dst.set(div, 0, w2, h);
+							//canvas.drawBitmap(image1.bitmap, src, dst, null);
+							drawDistorted(canvas, image1.bitmap, src, dst, -1);
 							// right, new page
-							Rect src3 = new Rect(w2, 0, w, h);
-							Rect dst3 = new Rect(w2, 0, w, h);
-							drawDimmedBitmap(canvas, image1.bitmap, src3, dst3);
+							src.set(w2, 0, w, h);
+							dst.set(w2, 0, w, h);
+							drawDimmedBitmap(canvas, image1.bitmap, src, dst);
 						} else {
 							// left - old page
-							Rect src1 = new Rect(0, 0, w2, h);
-							Rect dst1 = new Rect(0, 0, w2, h);
-							drawDimmedBitmap(canvas, image2.bitmap, src1, dst1);
+							Rect src = new Rect(0, 0, w2, h);
+							Rect dst = new Rect(0, 0, w2, h);
+							drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 							// right, resized old page
-							Rect src2 = new Rect(w2, 0, w, h);
-							Rect dst2 = new Rect(w2, 0, div, h);
-							//canvas.drawBitmap(image2.bitmap, src2, dst2, null);
-							drawDistorted(canvas, image2.bitmap, src2, dst2, 1);
+							src.set(w2, 0, w, h);
+							dst.set(w2, 0, div, h);
+							//canvas.drawBitmap(image2.bitmap, src, dst, null);
+							drawDistorted(canvas, image2.bitmap, src, dst, 1);
 							// right, new page
-							Rect src3 = new Rect(div, 0, w, h);
-							Rect dst3 = new Rect(div, 0, w, h);
-							drawDimmedBitmap(canvas, image1.bitmap, src3, dst3);
+							src.set(div, 0, w, h);
+							dst.set(div, 0, w, h);
+							drawDimmedBitmap(canvas, image1.bitmap, src, dst);
 
 							if (div > 0 && div < w)
 								drawShadow(canvas, shadowRect);
 						}
 					} else {
-						Rect src1 = new Rect(currShift, 0, w, h);
-						Rect dst1 = new Rect(currShift, 0, w, h);
-						drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
-						Rect src2 = new Rect(0, 0, w, h);
-						Rect dst2 = new Rect(0, 0, currShift, h);
-						//canvas.drawBitmap(image2.bitmap, src2, dst2, null);
-						drawDistorted(canvas, image2.bitmap, src2, dst2, 1);
+						Rect src = new Rect(currShift, 0, w, h);
+						Rect dst = new Rect(currShift, 0, w, h);
+						drawDimmedBitmap(canvas, image1.bitmap, src, dst);
+						src.set(0, 0, w, h);
+						dst.set(0, 0, currShift, h);
+						//canvas.drawBitmap(image2.bitmap, src, dst, null);
+						drawDistorted(canvas, image2.bitmap, src, dst, 1);
 
 						if (div > 0 && div < w)
 							drawShadow(canvas, shadowRect);
 					}
 				} else {
 					if (flipTwoPages) {
-						Rect src1 = new Rect(0, 0, w - currShift, h);
-						Rect dst1 = new Rect(currShift, 0, w, h);
-						drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
-						Rect src2 = new Rect(w - currShift, 0, w, h);
-						Rect dst2 = new Rect(0, 0, currShift, h);
-						drawDimmedBitmap(canvas, image2.bitmap, src2, dst2);
+						Rect src = new Rect(0, 0, w - currShift, h);
+						Rect dst = new Rect(currShift, 0, w, h);
+						drawDimmedBitmap(canvas, image1.bitmap, src, dst);
+						src.set(w - currShift, 0, w, h);
+						dst.set(0, 0, currShift, h);
+						drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 					} else {
-						Rect src1 = new Rect(currShift, 0, w, h);
-						Rect dst1 = new Rect(currShift, 0, w, h);
-						drawDimmedBitmap(canvas, image1.bitmap, src1, dst1);
-						Rect src2 = new Rect(w - currShift, 0, w, h);
-						Rect dst2 = new Rect(0, 0, currShift, h);
-						drawDimmedBitmap(canvas, image2.bitmap, src2, dst2);
+						Rect src = new Rect(currShift, 0, w, h);
+						Rect dst = new Rect(currShift, 0, w, h);
+						drawDimmedBitmap(canvas, image1.bitmap, src, dst);
+						src.set(w - currShift, 0, w, h);
+						dst.set(0, 0, currShift, h);
+						drawDimmedBitmap(canvas, image2.bitmap, src, dst);
 					}
 				}
 			}
@@ -5561,10 +5498,8 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 			rc = new Rect(0, h - ph, w - 1, h - 2);
 		else
 			rc = new Rect(0, 1, w - 1, ph);
-		int x = rc.left + (rc.right - rc.left) * position / 10000;
-		Rect rc1 = new Rect(rc);
-		rc1.right = x;
-		canvas.drawRect(rc1, Utils.createSolidPaint(0x40000000 | textColor));
+		rc.right = rc.left + (rc.right - rc.left) * position / 10000;
+		canvas.drawRect(rc, Utils.createSolidPaint(0x40000000 | textColor));
 	}
 
 	private int dimmingAlpha = 255; // no dimming
@@ -5760,7 +5695,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					}
 				} else
 					invalidImages = true;
-				factory.compact();
+				factory.clear();
 				mCurrentPageInfo = null;
 			}
 		});
@@ -6046,7 +5981,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 	public void moveSelection(final ReaderCommand command, final int param, final MoveSelectionCallback callback) {
 		post(new Task() {
 			private boolean res;
-			private Selection selection = new Selection();
+			private final Selection selection = new Selection();
 
 			@Override
 			public void work() throws Exception {
@@ -6193,7 +6128,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 
 						@Override
 						public boolean validate(String s) {
-							percent = Integer.valueOf(s);
+							percent = Integer.parseInt(s);
 							return percent >= 0 && percent <= 100;
 						}
 

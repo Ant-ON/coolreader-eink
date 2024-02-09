@@ -31,7 +31,7 @@ import android.content.SharedPreferences;
 
 public class OnlineStorePluginManager {
 	private static Map<String, OnlineStoreWrapper> pluginMap = new HashMap<String, OnlineStoreWrapper>();
-	public static OnlineStoreWrapper getPlugin(Activity activity, String path) {
+	public static OnlineStoreWrapper getPlugin(Context ctx, String path) {
 		if (!path.startsWith(FileInfo.ONLINE_CATALOG_PLUGIN_PREFIX))
 			path = FileInfo.ONLINE_CATALOG_PLUGIN_PREFIX + path;
 		int pos = path.indexOf(":");
@@ -39,10 +39,10 @@ public class OnlineStorePluginManager {
 		OnlineStoreWrapper wrapper = pluginMap.get(packageName);
 		if (wrapper == null) {
 			SharedPreferences preferences = null;
-			if (activity != null)
-				preferences = activity.getSharedPreferences(FileInfo.ONLINE_CATALOG_PLUGIN_PREFIX, Context.MODE_PRIVATE);
+			if (ctx != null)
+				preferences = ctx.getSharedPreferences(FileInfo.ONLINE_CATALOG_PLUGIN_PREFIX, Context.MODE_PRIVATE);
 			if (LitresPlugin.PACKAGE_NAME.equals(packageName))
-				wrapper = new OnlineStoreWrapper(new LitresPlugin(activity, preferences));
+				wrapper = new OnlineStoreWrapper(new LitresPlugin(ctx, preferences));
 			if (wrapper != null)
 				pluginMap.put(packageName, wrapper);
 		}

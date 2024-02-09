@@ -334,16 +334,16 @@ public class TTSControlService extends BaseService {
 						// update media session
 						MediaMetadata.Builder builder = new MediaMetadata.Builder();
 						if (null != mAuthors && mAuthors.length() > 0) {
-							builder = builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, mAuthors);
-							builder = builder.putString(MediaMetadata.METADATA_KEY_ARTIST, mAuthors);
+							builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, mAuthors);
+							builder.putString(MediaMetadata.METADATA_KEY_ARTIST, mAuthors);
 						}
 						if (null != mTitle && mTitle.length() > 0)
-							builder = builder.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
+							builder.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
 						if (null != mCoverBitmap) {
-							builder = builder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, mCoverBitmap);
-							builder = builder.putBitmap(MediaMetadata.METADATA_KEY_ART, mCoverBitmap);
+							builder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, mCoverBitmap);
+							builder.putBitmap(MediaMetadata.METADATA_KEY_ART, mCoverBitmap);
 						}
-						builder = builder.putLong(MediaMetadata.METADATA_KEY_DURATION, -1);		// unknown duration
+						builder.putLong(MediaMetadata.METADATA_KEY_DURATION, -1);		// unknown duration
 						mMediaSession.setMetadata(builder.build());
 						mMediaSession.setActive(true);
 						mMediaSession.setPlaybackState(
@@ -719,11 +719,11 @@ public class TTSControlService extends BaseService {
 			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
 				MediaMetadata.Builder builder = new MediaMetadata.Builder();
 				if (null != mAuthors && mAuthors.length() > 0)
-					builder = builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, mAuthors);
+					builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, mAuthors);
 				if (null != mTitle && mTitle.length() > 0)
-					builder = builder.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
+					builder.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
 				if (null != cover)
-					builder = builder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, cover);
+					builder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, cover);
 				mMediaSession.setMetadata(builder.build());
 			}
 		}
@@ -1325,9 +1325,9 @@ public class TTSControlService extends BaseService {
 			.setSmallIcon(R.drawable.cr3_logo_button_hc)
 			.setContentTitle(title);
 		if (null != utterance && !utterance.isEmpty())
-			builder = builder.setContentText(utterance);
+			builder.setContentText(utterance);
 		else
-			builder = builder.setContentText("...");
+			builder.setContentText("...");
 		builder.setOngoing(true)
 			.setAutoCancel(false)
 			.setPriority(Notification.PRIORITY_DEFAULT);

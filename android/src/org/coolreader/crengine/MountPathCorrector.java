@@ -27,7 +27,7 @@ import java.util.Set;
 
 public class MountPathCorrector {
 	private final File[] mountedRoots;
-	private LinkCollection rootFileLinks = new LinkCollection(); 
+	private final LinkCollection rootFileLinks = new LinkCollection();
 	public MountPathCorrector(File[] mountedRoots) {
 		this.mountedRoots = mountedRoots;
 		for (File f : mountedRoots)
@@ -113,7 +113,7 @@ public class MountPathCorrector {
 	}
 	
 	private static class LinkCollection {
-		private ArrayList<LinkInfo> links;
+		private final ArrayList<LinkInfo> links;
 		public LinkCollection() {
 			links = new ArrayList<LinkInfo>(4);
 		}

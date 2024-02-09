@@ -26,8 +26,10 @@
 package org.coolreader.crengine;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
@@ -63,7 +65,7 @@ public class Engine {
 
 	static final private String LIBRARY_NAME = "cr3engine-3-2-X";
 
-	private BaseActivity mActivity;
+	private Context mCtx;
 
 	public enum font_lang_compat {
 		font_lang_compat_invalid_tag,
@@ -91,7 +93,7 @@ public class Engine {
 					res.add(dir);
 			}
 		}
-		return res.toArray(new File[res.size()]);
+		return res.toArray(new File[0]);
 	}
 
 	public static Map<String, String> getMountedRootsMap() {
@@ -196,7 +198,7 @@ public class Engine {
 
 	public final static boolean LOG_ENGINE_TASKS = false;
 
-	private class TaskHandler implements Runnable {
+	private static class TaskHandler implements Runnable {
 		final EngineTask task;
 
 		public TaskHandler(EngineTask task) {
@@ -305,7 +307,7 @@ public class Engine {
 	}
 
 	public void fatalError(String msg) {
-		AlertDialog dlg = new AlertDialog.Builder(mActivity).setMessage(msg)
+		AlertDialog dlg = new AlertDialog.Builder(mCtx).setMessage(msg)
 				.setTitle("CoolReader fatal error").show();
 		try {
 			Thread.sleep(10);
@@ -313,45 +315,23 @@ public class Engine {
 			// do nothing
 		}
 		dlg.dismiss();
-		mActivity.finish();
+		System.exit(-1);
 	}
 
 	private ProgressDialog mProgress;
 	private boolean enable_progress = true;
 	private boolean progressShown = false;
-	private static int PROGRESS_STYLE = ProgressDialog.STYLE_HORIZONTAL;
 	private Drawable progressIcon = null;
-
-	// public void setProgressDrawable( final BitmapDrawable drawable )
-	// {
-	// if ( enable_progress ) {
-	// mBackgroundThread.executeGUI( new Runnable() {
-	// public void run() {
-	// // show progress
-	// log.v("showProgress() - in GUI thread");
-	// if ( mProgress!=null && progressShown ) {
-	// hideProgress();
-	// progressIcon = drawable;
-	// showProgress(mProgressPos, mProgressMessage);
-	// //mProgress.setIcon(drawable);
-	// }
-	// }
-	// });
-	// }
-	// }
 
 	public void showProgress(final int mainProgress, final int resourceId) {
 		showProgress(mainProgress,
-				mActivity.getResources().getString(resourceId));
+				mCtx.getResources().getString(resourceId));
 	}
 
 	public void showProgress(final int mainProgress, final int resourceId, Scanner.ScanControl scanControl) {
 		showProgress(mainProgress,
-				mActivity.getResources().getString(resourceId), scanControl);
+				mCtx.getResources().getString(resourceId), scanControl);
 	}
-
-	private String mProgressMessage = null;
-	private int mProgressPos = 0;
 
 	private volatile int nextProgressId = 0;
 
@@ -423,8 +403,6 @@ public class Engine {
 	 */
 	public void showProgress(final int mainProgress, final String msg, Scanner.ScanControl scanControl) {
 		final int progressId = ++nextProgressId;
-		mProgressMessage = msg;
-		mProgressPos = mainProgress;
 		if (mainProgress == 10000) {
 			//log.v("mainProgress==10000 : calling hideProgress");
 			hideProgress();
@@ -443,8 +421,8 @@ public class Engine {
 				if (mProgress == null) {
 					//log.v("showProgress() - creating progress window");
 					try {
-						if (mActivity != null && mActivity.isStarted()) {
-							mProgress = new ProgressDialog(mActivity);
+						if (mCtx instanceof BaseActivity && ((BaseActivity)mCtx).isStarted()) {
+							mProgress = new ProgressDialog(mCtx);
 							mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 							if (progressIcon != null)
 								mProgress.setIcon(progressIcon);
@@ -453,7 +431,7 @@ public class Engine {
 							mProgress.setMax(10000);
 							mProgress.setCancelable(null != scanControl);
 							mProgress.setProgress(mainProgress);
-							mProgress.setTitle(mActivity
+							mProgress.setTitle(mCtx
 											.getResources()
 											.getString(
 													R.string.progress_please_wait));
@@ -538,7 +516,7 @@ public class Engine {
 
 	public String loadResourceUtf8(int id) {
 		try {
-			return loadResourceUtf8(mActivity.getResources().openRawResource(id));
+			return loadResourceUtf8(mCtx.getResources().openRawResource(id));
 		} catch (Exception e) {
 			log.e("cannot load resource " + id);
 			return null;
@@ -562,7 +540,7 @@ public class Engine {
 
 	public byte[] loadResourceBytes(int id) {
 		try {
-			return loadResourceBytes(mActivity.getResources().openRawResource(id));
+			return loadResourceBytes(mCtx.getResources().openRawResource(id));
 		} catch (Exception e) {
 			log.e("cannot load resource");
 			return null;
@@ -597,19 +575,19 @@ public class Engine {
 
 	private static Engine instance;
 
-	public static Engine getInstance(BaseActivity activity) {
+	public static Engine getInstance(Context ctx) {
 		if (instance == null) {
-			instance = new Engine(activity);
+			instance = new Engine(ctx);
 		} else {
-			instance.setParams(activity);
+			instance.setParams(ctx);
 		}
 		return instance;
 	}
 
-	private void setParams(BaseActivity activity) {
-		this.mActivity = activity;
-		File cacheDir = mActivity.getCacheDir();
-		File filesDir = mActivity.getFilesDir();
+	private void setParams(Context ctx) {
+		this.mCtx = ctx;
+		File cacheDir = mCtx.getCacheDir();
+		File filesDir = mCtx.getFilesDir();
 		File bookCacheDir = new File(cacheDir, "bookCache");
 		File downloadDir = new File(filesDir, "downloads");
 		mAppPrivateDirs.put(downloadDir.getAbsolutePath(), "downloads");
@@ -619,16 +597,16 @@ public class Engine {
 	/**
 	 * Initialize CoolReader Engine
 	 *
-	 * @param activity base application activity
+	 * @param ctx base application activity
 	 */
-	private Engine(BaseActivity activity) {
-		setParams(activity);
+	private Engine(Context ctx) {
+		setParams(ctx);
 	}
 
 	public void initAgain() {
 		initMountRoots();
 		File[] dataDirs = Engine.getDataDirectories(null, false, true);
-		if (dataDirs != null && dataDirs.length > 0) {
+		if (dataDirs.length > 0) {
 			log.i("Engine.initAgain() : DataDir exist at start.");
 			DATADIR_IS_EXIST_AT_START = true;
 		} else {
@@ -1330,7 +1308,6 @@ public class Engine {
 		return out;
 	}
 
-
 	private static void initMountRoots() {
 
 		log.i("initMountRoots()");
@@ -1982,7 +1959,7 @@ public class Engine {
 		installLibrary();
 		initMountRoots();
 		File[] dataDirs = Engine.getDataDirectories(null, false, true);
-		if (dataDirs != null && dataDirs.length > 0) {
+		if (dataDirs.length > 0) {
 			log.i("Engine() : DataDir exist at start.");
 			DATADIR_IS_EXIST_AT_START = true;
 		} else {

@@ -165,7 +165,7 @@ public class TOCDlg extends BaseDialog {
 				return false;
 			}
 
-			private ArrayList<DataSetObserver> observers = new ArrayList<>();
+			private final ArrayList<DataSetObserver> observers = new ArrayList<>();
 			
 			public void registerDataSetObserver(DataSetObserver observer) {
 				observers.add(observer);

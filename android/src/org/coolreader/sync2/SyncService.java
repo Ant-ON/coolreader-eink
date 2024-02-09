@@ -595,7 +595,7 @@ public class SyncService extends BaseService {
 				}
 			}
 			if (mChannelCreated)
-				builder = builder.setChannelId(NOTIFICATION_CHANNEL_ID);
+				builder.setChannelId(NOTIFICATION_CHANNEL_ID);
 			else
 				return null;
 		} else {

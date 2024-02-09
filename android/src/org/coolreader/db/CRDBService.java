@@ -46,8 +46,8 @@ import java.util.Collection;
 public class CRDBService extends BaseService {
 	public static final Logger log = L.create("db");
 
-    private MainDB mainDB = new MainDB();
-    private CoverDB coverDB = new CoverDB();
+    private final MainDB mainDB = new MainDB();
+    private final CoverDB coverDB = new CoverDB();
 
 	public CRDBService() {
 		super("crdb");

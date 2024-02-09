@@ -21,7 +21,6 @@
 package org.coolreader.crengine;
 
 import android.graphics.Rect;
-import android.os.Build;
 import android.view.ViewGroup;
 
 import org.coolreader.CoolReader;
@@ -32,10 +31,10 @@ public class ReaderViewLayout extends ViewGroup implements Settings {
 
 		public static final Logger log = L.create("rvl");
 
-		private CoolReader activity;
-		private ReaderView contentView;
-		private StatusBar statusView;
-		private CRToolBar toolbarView;
+		private final CoolReader activity;
+		private final ReaderView contentView;
+		private final StatusBar statusView;
+		private final CRToolBar toolbarView;
 		private int statusBarLocation;
 		private int toolbarLocation;
 		private boolean hideToolbarInFullscren;

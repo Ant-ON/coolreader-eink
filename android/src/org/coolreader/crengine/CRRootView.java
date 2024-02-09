@@ -53,7 +53,7 @@ public class CRRootView extends ViewGroup implements CoverpageReadyListener {
 	private LinearLayout mFilesystemScroll;
 	private LinearLayout mLibraryScroll;
 	private LinearLayout mOnlineCatalogsScroll;
-	private CoverpageManager mCoverpageManager;
+	private final CoverpageManager mCoverpageManager;
 	private int coverWidth;
 	private int coverHeight;
 	private BookInfo currentBook;

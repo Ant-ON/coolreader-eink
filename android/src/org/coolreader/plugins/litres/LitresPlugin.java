@@ -46,17 +46,17 @@ import org.coolreader.plugins.litres.LitresConnection.LitresAuthInfo;
 import org.coolreader.plugins.litres.LitresConnection.PurchaseStatus;
 import org.coolreader.plugins.litres.LitresConnection.ResultHandler;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 
 public class LitresPlugin implements OnlineStorePlugin {
 
 	public static final String PACKAGE_NAME = "org.coolreader.plugins.litres";
-	private Activity activity;
+	private Context mCtx;
 	
 	private final LitresConnection connection;
-	public LitresPlugin(Activity activity, SharedPreferences preferences) {
-		this.activity = activity;
+	public LitresPlugin(Context ctx, SharedPreferences preferences) {
+		this.mCtx = ctx;
 		connection = LitresConnection.create(preferences);
 	}
 	
@@ -75,12 +75,12 @@ public class LitresPlugin implements OnlineStorePlugin {
 
 	@Override
 	public String getDescription() {
-		return activity.getString(org.coolreader.R.string.online_store_plugin_description_litres);
+		return mCtx.getString(org.coolreader.R.string.online_store_plugin_description_litres);
 	}
 
 	@Override
 	public String getName() {
-		return activity.getString(org.coolreader.R.string.online_store_plugin_name_litres);
+		return mCtx.getString(org.coolreader.R.string.online_store_plugin_name_litres);
 	}
 
 	@Override
@@ -104,48 +104,48 @@ public class LitresPlugin implements OnlineStorePlugin {
 	public ArrayList<OnlineStoreRegistrationParam> getNewAccountParameters() {
 		ArrayList<OnlineStoreRegistrationParam> res = new ArrayList<OnlineStoreRegistrationParam>();
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_LOGIN,
-						activity.getString(org.coolreader.R.string.online_store_login),
+						mCtx.getString(org.coolreader.R.string.online_store_login),
 						null,
 						true
 				));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_PASSWORD,
-				activity.getString(org.coolreader.R.string.online_store_password),
+				mCtx.getString(org.coolreader.R.string.online_store_password),
 				null,
 				true
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_EMAIL,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_email),
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_email_description_litres),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_email),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_email_description_litres),
 				false
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_FIRST_NAME,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_first_name),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_first_name),
 				null,
 				false
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_MIDDLE_NAME,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_middle_name),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_middle_name),
 				null,
 				false
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_LAST_NAME,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_last_name),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_last_name),
 				null,
 				false
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_CITY,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_city),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_city),
 				null,
 				false
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_GENDER,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_gender),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_gender),
 				null,
 				false
 		));
 		res.add(new OnlineStoreRegistrationParam(OnlineStoreRegistrationParam.NEW_ACCOUNT_PARAM_SUBSCRIBE,
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_subscribe),
-				activity.getString(org.coolreader.R.string.online_store_new_account_param_subscribe_description_litres),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_subscribe),
+				mCtx.getString(org.coolreader.R.string.online_store_new_account_param_subscribe_description_litres),
 				false
 		));
 		return res;

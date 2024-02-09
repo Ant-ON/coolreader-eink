@@ -28,8 +28,8 @@ import android.widget.PopupWindow;
 import org.coolreader.R;
 
 public class ProgressPopup {
-	private BaseActivity context;
-	private View parent;
+	private final BaseActivity context;
+	private final View parent;
 	private PopupWindow popup;
 	public ProgressPopup(BaseActivity context, View parent) {
 		this.context = context;
@@ -41,7 +41,7 @@ public class ProgressPopup {
 	        LayoutInflater inflater = LayoutInflater.from(context);
 	        View content = inflater.inflate(R.layout.network_access_progress, null);
 	        content.measure(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-			popup = new PopupWindow(content, content.getMeasuredWidth(), content.getMeasuredHeight());
+	        popup = new PopupWindow(content, content.getMeasuredWidth(), content.getMeasuredHeight());
 	        //popup.setContentView(content);
 	        popup.setBackgroundDrawable(null);
 	        popup.setOutsideTouchable(true);

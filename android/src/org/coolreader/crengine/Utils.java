@@ -366,7 +366,7 @@ public class Utils {
 		}
 		if (buf.length() > 0)
 			list.add(buf.toString());
-		return list.toArray(new String[list.size()]);
+		return list.toArray(new String[0]);
 	}
 
 	public static boolean eq(String s1, String s2) {
@@ -486,17 +486,17 @@ public class Utils {
 		return String.valueOf(percent/100) + "." + String.valueOf(percent/10%10) + "%";
 	}
 
-	public static String formatTime( Activity activity, long timeStamp )
+	public static String formatTime( Context ctx, long timeStamp )
 	{
 		if ( timeStamp<5000*60*60*24*1000 )
 			return "";
 		TimeZone tz = java.util.TimeZone.getDefault();
 		Calendar c = Calendar.getInstance(tz);
 		c.setTimeInMillis(timeStamp);
-		return DateFormat.getTimeFormat(activity.getApplicationContext()).format(c.getTime());
+		return DateFormat.getTimeFormat(ctx.getApplicationContext()).format(c.getTime());
 	}
 	
-	public static String formatDate( Activity activity, long timeStamp )
+	public static String formatDate( Context ctx, long timeStamp )
 	{
 		if ( timeStamp<5000*60*60*24*1000 )
 			return "";
@@ -509,9 +509,9 @@ public class Utils {
 		if ( c.get(Calendar.YEAR)==now.get(Calendar.YEAR)
 				&& c.get(Calendar.MONTH)==now.get(Calendar.MONTH)
 				&& c.get(Calendar.DAY_OF_MONTH)==now.get(Calendar.DAY_OF_MONTH)) {
-			return formatTime(activity, timeStamp);
+			return formatTime(ctx, timeStamp);
 		} else {
-			return DateFormat.getDateFormat(activity.getApplicationContext()).format(c.getTime());
+			return DateFormat.getDateFormat(ctx.getApplicationContext()).format(c.getTime());
 		}
 	}
 	
@@ -572,10 +572,10 @@ public class Utils {
 		return formatSize(item.size) + " " + (item.format!=null ? item.format.name().toLowerCase() : "") + " " + formatDate(activity, item.createTime);
 	}
 
-	public static String formatLastPosition(Activity activity, Bookmark pos) {
+	public static String formatLastPosition(Context ctx, Bookmark pos) {
 		if ( pos!=null && pos.getPercent() > 0 && pos.getTimeStamp() > 0) {
 			//return formatPercent(pos.getPercent()) + " " + formatDate(activity, pos.getTimeStamp());
-			return formatPercent(pos.getPercent()) + " " + formatDate(activity, pos.getTimeStamp()) + " (" + formatTimeElapsed(pos.getTimeElapsed()) + ")";
+			return formatPercent(pos.getPercent()) + " " + formatDate(ctx, pos.getTimeStamp()) + " (" + formatTimeElapsed(pos.getTimeElapsed()) + ")";
 		} else {
 			return "";
 		}
