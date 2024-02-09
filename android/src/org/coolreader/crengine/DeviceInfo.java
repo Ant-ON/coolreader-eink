@@ -26,11 +26,13 @@
 
 package org.coolreader.crengine;
 
+import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.util.Log;
+import android.view.WindowManager;
 
-import java.lang.reflect.Field;
+import org.coolreader.CoolReaderApp;
 
 public class DeviceInfo {
 
@@ -105,8 +107,13 @@ public class DeviceInfo {
 		EINK_TOLINO = (BRAND.toLowerCase().contentEquals("tolino") && (MODEL.toLowerCase().contentEquals("imx50_rdp")) ) || 		// SHINE
 				(MODEL.toLowerCase().contentEquals("tolino") && DEVICE.toLowerCase().contentEquals("tolino_vision2")); //Tolino Vision HD4 doesn't show any Brand, only Model=tolino and  DEVICE=tolino_vision2)
 
-
-		EINK_SCREEN = EINK_ENERGYSYSTEM || EINK_TOLINO;
+		boolean eink = false;
+		try
+		{
+			final WindowManager wm = (WindowManager) CoolReaderApp.get().getSystemService(Context.WINDOW_SERVICE);
+			eink = wm.getDefaultDisplay().getRefreshRate() < 20;
+		} catch (Exception E) { E.printStackTrace(); }
+		EINK_SCREEN = eink || EINK_ENERGYSYSTEM || EINK_TOLINO;
 
 		// On Onyx Boox Monte Cristo 3 (and possible Monte Cristo, Monte Cristo 2) long press action on buttons are catch by system and not available for application
 		// TODO: check this on other ONYX BOOX Readers
@@ -238,7 +245,7 @@ public class DeviceInfo {
 				p = p.substring(0, p.length()-1);
 			}
 			if (startingWildcard && endingWildcard) {
-				if (value.indexOf(p) < 0)
+				if (!value.contains(p))
 					return false;
 			} else if (startingWildcard) {
 				if (!value.endsWith(p))

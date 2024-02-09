@@ -35,7 +35,8 @@
             android:process="org.coolreader"
             android:resizeableActivity="true"
             android:usesCleartextTraffic="true"
-            android:requestLegacyExternalStorage="true" >
+            android:requestLegacyExternalStorage="true"
+            android:name="org.coolreader.CoolReaderApp" >
         <!--
                    android:configChanges="orientation|keyboardHidden|locale|screenSize"
         -->
