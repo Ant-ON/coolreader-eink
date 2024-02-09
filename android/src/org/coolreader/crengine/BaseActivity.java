@@ -138,9 +138,7 @@ public class BaseActivity extends Activity implements Settings {
 	}
 
 	protected void startServices() {
-		if (DeviceInfo.EINK_NOOK)
-			mEinkScreen = new EinkScreenNook();
-		else if (DeviceInfo.EINK_TOLINO)
+		if (DeviceInfo.EINK_TOLINO)
 			mEinkScreen = new EinkScreenTolino();
 		/*
 		 * Support for ONYX devices is disabled until the ONYX SDK is released under a GPL compatible license.
@@ -314,11 +312,9 @@ public class BaseActivity extends Activity implements Settings {
 		mPaused = false;
 		mIsStarted = true;
 		backlightControl.onUserActivity();
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-			Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-			if (null != display) {
-				onScreenRotationChanged(display.getRotation());
-			}
+		Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		if (null != display) {
+			onScreenRotationChanged(display.getRotation());
 		}
 		super.onResume();
 	}
@@ -588,9 +584,7 @@ public class BaseActivity extends Activity implements Settings {
 	public boolean isLandscape() {
 		if (screenOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
 			return true;
-		if (DeviceInfo.getSDKLevel() >= 9 && isReverseLandscape())
-			return true;
-		return false;
+		return isReverseLandscape();
 	}
 
 	// support pre API LEVEL 9
@@ -602,22 +596,21 @@ public class BaseActivity extends Activity implements Settings {
 
 	public void setScreenOrientation(int angle) {
 		int newOrientation = screenOrientation;
-		boolean level9 = DeviceInfo.getSDKLevel() >= 9;
 		switch (angle) {
 			case 0:
-				newOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT; // level9 ? ActivityInfo_SCREEN_ORIENTATION_SENSOR_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+				newOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 				break;
 			case 1:
-				newOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE; // level9 ? ActivityInfo_SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+				newOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 				break;
 			case 2:
-				newOrientation = level9 ? ActivityInfo_SCREEN_ORIENTATION_REVERSE_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+				newOrientation = ActivityInfo_SCREEN_ORIENTATION_REVERSE_PORTRAIT;
 				break;
 			case 3:
-				newOrientation = level9 ? ActivityInfo_SCREEN_ORIENTATION_REVERSE_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+				newOrientation = ActivityInfo_SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 				break;
 			case 4:
-				newOrientation = level9 ? ActivityInfo_SCREEN_ORIENTATION_FULL_SENSOR : ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+				newOrientation = ActivityInfo_SCREEN_ORIENTATION_FULL_SENSOR;
 				break;
 			case 5:
 				newOrientation = ActivityInfo.SCREEN_ORIENTATION_USER;
@@ -642,12 +635,11 @@ public class BaseActivity extends Activity implements Settings {
 	public void onConfigurationChanged(Configuration newConfig) {
 		// pass
 		orientationFromSensor = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? 1 : 0;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-			Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-			if (null != display) {
-				onScreenRotationChanged(display.getRotation());
-			}
+		Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		if (null != display) {
+			onScreenRotationChanged(display.getRotation());
 		}
+
 		//final int orientation = newConfig.orientation==Configuration.ORIENTATION_LANDSCAPE ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 //		if ( orientation!=screenOrientation ) {
 //			log.d("Screen orientation has been changed: ask for change");
@@ -743,76 +735,58 @@ public class BaseActivity extends Activity implements Settings {
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@SuppressLint("NewApi")
 	public boolean setSystemUiVisibility() {
-		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
-			int flags = 0;
-			if (getKeyBacklight() == 0) {
-				if (DeviceInfo.getSDKLevel() < 19)
-					// backlight of hardware buttons enabled/disabled
-					// in updateButtonsBrightness(), turnOffKeyBacklight(), turnOnKeyBacklight()
-					// entry point onUserActivity().
-					// This flag just shade software navigation bar and system UI
-					flags |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-			}
-			if (isFullscreen() /*&& wantHideNavbarInFullscreen() && isSmartphone()*/) {
-				if (DeviceInfo.getSDKLevel() >= 19)
-					// Flag View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY added in API 19
-					// without this flag  SYSTEM_UI_FLAG_HIDE_NAVIGATION will be force cleared by the system on any user interaction,
-					// and SYSTEM_UI_FLAG_FULLSCREEN will be force-cleared by the system if the user swipes from the top of the screen.
-					// So use this flags only on API >= 19
-					flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-				else
-					flags |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-			}
-			setSystemUiVisibility(flags);
+		int flags = 0;
+		if (isFullscreen() /*&& wantHideNavbarInFullscreen() && isSmartphone()*/) {
+			// Flag View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY added in API 19
+			// without this flag  SYSTEM_UI_FLAG_HIDE_NAVIGATION will be force cleared by the system on any user interaction,
+			// and SYSTEM_UI_FLAG_FULLSCREEN will be force-cleared by the system if the user swipes from the top of the screen.
+			// So use this flags only on API >= 19
+			flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+					View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+					View.SYSTEM_UI_FLAG_FULLSCREEN |
+					View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+		}
+		setSystemUiVisibility(flags);
 //			if (isFullscreen() && DeviceInfo.getSDKLevel() >= DeviceInfo.ICE_CREAM_SANDWICH)
 //				simulateTouch();
-			return true;
-		}
-		return false;
+		return true;
 	}
 
 
 	private int lastSystemUiVisibility = -1;
 	private boolean systemUiVisibilityListenerIsSet = false;
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@SuppressLint("NewApi")
 	private boolean setSystemUiVisibility(int value) {
-		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
-			if (!systemUiVisibilityListenerIsSet && null != mDecorView) {
-				mDecorView.setOnSystemUiVisibilityChangeListener(visibility -> lastSystemUiVisibility = visibility);
-				systemUiVisibilityListenerIsSet = true;
-			}
-			boolean a4 = DeviceInfo.getSDKLevel() >= DeviceInfo.ICE_CREAM_SANDWICH;
-			if (!a4)
-				value &= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-			if (value == lastSystemUiVisibility)// && a4)
-				return false;
-			//lastSystemUiVisibility = value;
-
-			if (null == mDecorView)
-				return false;
-			try {
-				Method m = mDecorView.getClass().getMethod("setSystemUiVisibility", int.class);
-				m.invoke(mDecorView, value);
-				return true;
-			} catch (SecurityException e) {
-				// ignore
-			} catch (NoSuchMethodException e) {
-				// ignore
-			} catch (IllegalArgumentException e) {
-				// ignore
-			} catch (IllegalAccessException e) {
-				// ignore
-			} catch (InvocationTargetException e) {
-				// ignore
-			}
+		if (!systemUiVisibilityListenerIsSet && null != mDecorView) {
+			mDecorView.setOnSystemUiVisibilityChangeListener(visibility -> lastSystemUiVisibility = visibility);
+			systemUiVisibilityListenerIsSet = true;
 		}
+
+		if (value == lastSystemUiVisibility)
+			return false;
+		//lastSystemUiVisibility = value;
+
+		if (null == mDecorView)
+			return false;
+		try {
+			Method m = mDecorView.getClass().getMethod("setSystemUiVisibility", int.class);
+			m.invoke(mDecorView, value);
+			return true;
+		} catch (SecurityException e) {
+			// ignore
+		} catch (NoSuchMethodException e) {
+			// ignore
+		} catch (IllegalArgumentException e) {
+			// ignore
+		} catch (IllegalAccessException e) {
+			// ignore
+		} catch (InvocationTargetException e) {
+			// ignore
+		}
+
 		return false;
 	}
 
@@ -824,10 +798,9 @@ public class BaseActivity extends Activity implements Settings {
 
 	public boolean setKeyBacklight(int value) {
 		currentKeyBacklightLevel = value;
-		// Try ICS way
-		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
-			setSystemUiVisibility();
-		}
+
+		setSystemUiVisibility();
+
 		// thread safe
 		return Engine.getInstance(this).setKeyBacklight(value);
 	}
@@ -887,15 +860,14 @@ public class BaseActivity extends Activity implements Settings {
 
 	private int screenBacklightBrightness = -1; // use default
 	private int screenWarmBacklightBrightness = -1; // use default
-	//private boolean brightnessHackError = false;
-	private boolean brightnessHackError = DeviceInfo.SAMSUNG_BUTTONS_HIGHLIGHT_PATCH;
+	private boolean brightnessHackError = false;
 
 	private void turnOffKeyBacklight() {
 		if (!isStarted())
 			return;
-		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
-			setKeyBacklight(0);
-		}
+
+		setKeyBacklight(0);
+
 		// repeat again in short interval
 		if (!Engine.getInstance(this).setKeyBacklight(0)) {
 			//log.w("Cannot control key backlight directly");
@@ -1202,15 +1174,11 @@ public class BaseActivity extends Activity implements Settings {
 	}
 
 	public void showToast(int stringResourceId, Object... formatArgs) {
-		String s = getString(stringResourceId, formatArgs);
-		if (s != null)
-			showToast(s, Toast.LENGTH_LONG);
+		showToast(getString(stringResourceId, formatArgs), Toast.LENGTH_LONG);
 	}
 
 	public void showToast(int stringResourceId, int duration) {
-		String s = getString(stringResourceId);
-		if (s != null)
-			showToast(s, duration);
+		showToast(getString(stringResourceId), duration);
 	}
 
 	public void showToast(String msg) {
@@ -1267,17 +1235,16 @@ public class BaseActivity extends Activity implements Settings {
 	}
 
 
-	private static String PREF_HELP_FILE = "HelpFile";
+	private static final String PREF_HELP_FILE = "HelpFile";
 
 	public String getLastGeneratedHelpFileSignature() {
 		SharedPreferences pref = getSharedPreferences(PREF_FILE, 0);
-		String res = pref.getString(PREF_HELP_FILE, null);
-		return res;
+		return pref.getString(PREF_HELP_FILE, null);
 	}
 
 	public void setLastGeneratedHelpFileSignature(String v) {
 		SharedPreferences pref = getSharedPreferences(PREF_FILE, 0);
-		pref.edit().putString(PREF_HELP_FILE, v).commit();
+		pref.edit().putString(PREF_HELP_FILE, v).apply();
 	}
 
 
@@ -1636,7 +1603,7 @@ public class BaseActivity extends Activity implements Settings {
 			}
 		}
 
-		private static DefKeyAction[] DEF_KEY_ACTIONS = {
+		private static final DefKeyAction[] DEF_KEY_ACTIONS = {
 				new DefKeyAction(KeyEvent.KEYCODE_BACK, ReaderAction.NORMAL, ReaderAction.GO_BACK),
 				new DefKeyAction(KeyEvent.KEYCODE_BACK, ReaderAction.LONG, ReaderAction.EXIT),
 				new DefKeyAction(KeyEvent.KEYCODE_BACK, ReaderAction.DOUBLE, ReaderAction.EXIT),
@@ -1644,8 +1611,8 @@ public class BaseActivity extends Activity implements Settings {
 				new DefKeyAction(KeyEvent.KEYCODE_DPAD_CENTER, ReaderAction.LONG, ReaderAction.BOOKMARKS),
 				new DefKeyAction(KeyEvent.KEYCODE_DPAD_UP, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
 				new DefKeyAction(KeyEvent.KEYCODE_DPAD_DOWN, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
-				new DefKeyAction(KeyEvent.KEYCODE_DPAD_UP, ReaderAction.LONG, (DeviceInfo.EINK_SONY ? ReaderAction.PAGE_UP_10 : ReaderAction.REPEAT)),
-				new DefKeyAction(KeyEvent.KEYCODE_DPAD_DOWN, ReaderAction.LONG, (DeviceInfo.EINK_SONY ? ReaderAction.PAGE_DOWN_10 : ReaderAction.REPEAT)),
+				new DefKeyAction(KeyEvent.KEYCODE_DPAD_UP, ReaderAction.LONG, ReaderAction.REPEAT),
+				new DefKeyAction(KeyEvent.KEYCODE_DPAD_DOWN, ReaderAction.LONG, ReaderAction.REPEAT),
 				new DefKeyAction(KeyEvent.KEYCODE_DPAD_LEFT, ReaderAction.NORMAL, (DeviceInfo.NAVIGATE_LEFTRIGHT ? ReaderAction.PAGE_UP : ReaderAction.PAGE_UP_10)),
 				new DefKeyAction(KeyEvent.KEYCODE_DPAD_RIGHT, ReaderAction.NORMAL, (DeviceInfo.NAVIGATE_LEFTRIGHT ? ReaderAction.PAGE_DOWN : ReaderAction.PAGE_DOWN_10)),
 				new DefKeyAction(KeyEvent.KEYCODE_DPAD_LEFT, ReaderAction.LONG, ReaderAction.REPEAT),
@@ -1668,11 +1635,6 @@ public class BaseActivity extends Activity implements Settings {
 				new DefKeyAction(KeyEvent.KEYCODE_PAGE_DOWN, ReaderAction.LONG, ReaderAction.NONE),
 				new DefKeyAction(KeyEvent.KEYCODE_PAGE_DOWN, ReaderAction.DOUBLE, ReaderAction.NONE),
 
-				new DefKeyAction(ReaderView.SONY_DPAD_DOWN_SCANCODE, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
-				new DefKeyAction(ReaderView.SONY_DPAD_UP_SCANCODE, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
-				new DefKeyAction(ReaderView.SONY_DPAD_DOWN_SCANCODE, ReaderAction.LONG, ReaderAction.PAGE_DOWN_10),
-				new DefKeyAction(ReaderView.SONY_DPAD_UP_SCANCODE, ReaderAction.LONG, ReaderAction.PAGE_UP_10),
-
 				new DefKeyAction(KeyEvent.KEYCODE_8, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
 				new DefKeyAction(KeyEvent.KEYCODE_2, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
 				new DefKeyAction(KeyEvent.KEYCODE_8, ReaderAction.LONG, ReaderAction.PAGE_DOWN_10),
@@ -1687,27 +1649,7 @@ public class BaseActivity extends Activity implements Settings {
 //		    public static final int KEYCODE_PAGE_TOPRIGHT = 0x5e; // back
 
 		};
-		// Some key codes on Nook devices conflicted with standard keyboard, for example, KEYCODE_PAGE_BOTTOMLEFT with PAGE_DOWN
-		private static DefKeyAction[] DEF_NOOK_KEY_ACTIONS = {
-				new DefKeyAction(ReaderView.NOOK_KEY_NEXT_RIGHT, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
-				new DefKeyAction(ReaderView.NOOK_KEY_SHIFT_DOWN, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
-				new DefKeyAction(ReaderView.NOOK_KEY_PREV_LEFT, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
-				new DefKeyAction(ReaderView.NOOK_KEY_PREV_RIGHT, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
-				new DefKeyAction(ReaderView.NOOK_KEY_SHIFT_UP, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
-
-				new DefKeyAction(ReaderView.NOOK_12_KEY_NEXT_LEFT, ReaderAction.NORMAL, (DeviceInfo.EINK_NOOK ? ReaderAction.PAGE_UP : ReaderAction.PAGE_DOWN)),
-				new DefKeyAction(ReaderView.NOOK_12_KEY_NEXT_LEFT, ReaderAction.LONG, (DeviceInfo.EINK_NOOK ? ReaderAction.PAGE_UP_10 : ReaderAction.PAGE_DOWN_10)),
-
-				new DefKeyAction(ReaderView.KEYCODE_PAGE_BOTTOMLEFT, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
-//			    new DefKeyAction(ReaderView.KEYCODE_PAGE_BOTTOMRIGHT, ReaderAction.NORMAL, ReaderAction.PAGE_UP),
-				new DefKeyAction(ReaderView.KEYCODE_PAGE_TOPLEFT, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
-				new DefKeyAction(ReaderView.KEYCODE_PAGE_TOPRIGHT, ReaderAction.NORMAL, ReaderAction.PAGE_DOWN),
-				new DefKeyAction(ReaderView.KEYCODE_PAGE_BOTTOMLEFT, ReaderAction.LONG, ReaderAction.PAGE_UP_10),
-//			    new DefKeyAction(ReaderView.KEYCODE_PAGE_BOTTOMRIGHT, ReaderAction.LONG, ReaderAction.PAGE_UP_10),
-				new DefKeyAction(ReaderView.KEYCODE_PAGE_TOPLEFT, ReaderAction.LONG, ReaderAction.PAGE_DOWN_10),
-				new DefKeyAction(ReaderView.KEYCODE_PAGE_TOPRIGHT, ReaderAction.LONG, ReaderAction.PAGE_DOWN_10),
-		};
-		private static DefTapAction[] DEF_TAP_ACTIONS = {
+		private static final DefTapAction[] DEF_TAP_ACTIONS = {
 				new DefTapAction(1, false, ReaderAction.PAGE_UP),
 				new DefTapAction(2, false, ReaderAction.PAGE_UP),
 				new DefTapAction(4, false, ReaderAction.PAGE_UP),
@@ -1800,8 +1742,7 @@ public class BaseActivity extends Activity implements Settings {
 		}
 
 		public boolean fixFontSettings(Properties props) {
-			boolean res = false;
-			res = applyDefaultFont(props, ReaderView.PROP_FONT_FACE, DeviceInfo.DEF_FONT_FACE) || res;
+			boolean res = applyDefaultFont(props, ReaderView.PROP_FONT_FACE, DeviceInfo.DEF_FONT_FACE);
 			res = applyDefaultFont(props, ReaderView.PROP_STATUS_FONT_FACE, DeviceInfo.DEF_FONT_FACE) || res;
 			res = applyDefaultFallbackFontList(props, ReaderView.PROP_FALLBACK_FONT_FACES, "Noto Color Emoji; Droid Sans Fallback; Noto Sans CJK SC; Noto Sans Arabic UI; Noto Sans Devanagari UI; Roboto; FreeSans; FreeSerif; Noto Serif; Noto Sans; Arial Unicode MS") || res;
 			return res;
@@ -1849,12 +1790,6 @@ public class BaseActivity extends Activity implements Settings {
 			for (DefKeyAction ka : DEF_KEY_ACTIONS) {
 				props.applyDefault(ka.getProp(), ka.action.id);
 			}
-			if (DeviceInfo.NOOK_NAVIGATION_KEYS) {
-				// Add default key mappings for Nook devices & also override defaults for some keys (PAGE_UP, PAGE_DOWN)
-				for (DefKeyAction ka : DEF_NOOK_KEY_ACTIONS) {
-					props.applyDefault(ka.getProp(), ka.action.id);
-				}
-			}
 
 			boolean menuKeyActionFound = false;
 			for (DefKeyAction ka : DEF_KEY_ACTIONS) {
@@ -1887,11 +1822,7 @@ public class BaseActivity extends Activity implements Settings {
 				}
 			}
 
-			if (DeviceInfo.EINK_NOOK) {
-				props.applyDefault(ReaderView.PROP_PAGE_ANIMATION, ReaderView.PAGE_ANIMATION_NONE);
-			} else {
-				props.applyDefault(ReaderView.PROP_PAGE_ANIMATION, ReaderView.PAGE_ANIMATION_SLIDE2);
-			}
+			props.applyDefault(ReaderView.PROP_PAGE_ANIMATION, ReaderView.PAGE_ANIMATION_SLIDE2);
 
 			props.applyDefault(ReaderView.PROP_APP_LOCALE, Lang.DEFAULT.code);
 
@@ -1908,7 +1839,7 @@ public class BaseActivity extends Activity implements Settings {
 			props.applyDefault(ReaderView.PROP_APP_MOTION_TIMEOUT, "0");
 			props.applyDefault(ReaderView.PROP_APP_BOUNCE_TAP_INTERVAL, "-1");
 			props.applyDefault(ReaderView.PROP_APP_BOOK_PROPERTY_SCAN_ENABLED, "1");
-			props.applyDefault(ReaderView.PROP_APP_KEY_BACKLIGHT_OFF, DeviceInfo.SAMSUNG_BUTTONS_HIGHLIGHT_PATCH ? "0" : "1");
+			props.applyDefault(ReaderView.PROP_APP_KEY_BACKLIGHT_OFF, "1");
 			props.applyDefault(ReaderView.PROP_LANDSCAPE_PAGES, DeviceInfo.ONE_COLUMN_IN_LANDSCAPE ? "0" : "1");
 			//props.applyDefault(ReaderView.PROP_TOOLBAR_APPEARANCE, "0");
 			// autodetect best initial font size based on display resolution
@@ -1930,7 +1861,7 @@ public class BaseActivity extends Activity implements Settings {
 			props.applyDefault(ReaderView.PROP_FONT_SIZE, String.valueOf(fontSize));
 			props.applyDefault(ReaderView.PROP_FONT_BASE_WEIGHT, 400);
 			props.applyDefault(ReaderView.PROP_FONT_HINTING, "2");
-			props.applyDefault(ReaderView.PROP_STATUS_FONT_SIZE, DeviceInfo.EINK_NOOK ? "15" : String.valueOf(statusFontSize));
+			props.applyDefault(ReaderView.PROP_STATUS_FONT_SIZE, String.valueOf(statusFontSize));
 			props.applyDefault(ReaderView.PROP_FONT_COLOR, "#000000");
 			props.applyDefault(ReaderView.PROP_FONT_COLOR_DAY, "#000000");
 			props.applyDefault(ReaderView.PROP_FONT_COLOR_NIGHT, !DeviceInfo.EINK_SCREEN ? "#D0B070" : "#FFFFFF");
@@ -2017,7 +1948,7 @@ public class BaseActivity extends Activity implements Settings {
 			props.applyDefault(ReaderView.PROP_TEXTLANG_HYPH_FORCE_ALGORITHMIC, "0");
 
 			props.applyDefault(ReaderView.PROP_STATUS_LOCATION, !DeviceInfo.EINK_SCREEN ? Settings.VIEWER_STATUS_PAGE_HEADER : Settings.VIEWER_STATUS_PAGE_FOOTER);
-			//props.applyDefault(ReaderView.PROP_TOOLBAR_LOCATION, DeviceInfo.getSDKLevel() < DeviceInfo.HONEYCOMB ? Settings.VIEWER_TOOLBAR_NONE : Settings.VIEWER_TOOLBAR_SHORT_SIDE);
+			//props.applyDefault(ReaderView.PROP_TOOLBAR_LOCATION, Settings.VIEWER_TOOLBAR_SHORT_SIDE);
 			props.applyDefault(ReaderView.PROP_TOOLBAR_LOCATION, Settings.VIEWER_TOOLBAR_NONE);
 			props.applyDefault(ReaderView.PROP_TOOLBAR_HIDE_IN_FULLSCREEN, "0");
 
@@ -2088,9 +2019,7 @@ public class BaseActivity extends Activity implements Settings {
 				}
 			}
 
-			Properties props = loadSettings(mActivity, propsFile);
-
-			return props;
+			return loadSettings(mActivity, propsFile);
 		}
 
 		public Properties loadSettings(int profile) {
@@ -2204,30 +2133,17 @@ public class BaseActivity extends Activity implements Settings {
 	public boolean hasHardwareMenuKey() {
 		if (hasHardwareMenuKey == null) {
 			ViewConfiguration vc = ViewConfiguration.get(this);
-			if (DeviceInfo.getSDKLevel() >= 14) {
-				//boolean vc.hasPermanentMenuKey();
-				try {
-					Method m = vc.getClass().getMethod("hasPermanentMenuKey", new Class<?>[]{});
-					try {
-						hasHardwareMenuKey = (Boolean) m.invoke(vc, new Object[]{});
-					} catch (IllegalArgumentException e) {
-						hasHardwareMenuKey = false;
-					} catch (IllegalAccessException e) {
-						hasHardwareMenuKey = false;
-					} catch (InvocationTargetException e) {
-						hasHardwareMenuKey = false;
-					}
-				} catch (NoSuchMethodException e) {
-					hasHardwareMenuKey = false;
-				}
+
+			//boolean vc.hasPermanentMenuKey();
+			try {
+				Method m = vc.getClass().getMethod("hasPermanentMenuKey", new Class<?>[]{});
+				hasHardwareMenuKey = (Boolean) m.invoke(vc, new Object[]{});
+			} catch (Exception e) {
+				hasHardwareMenuKey = false;
 			}
+
 			if (hasHardwareMenuKey == null) {
-				if (DeviceInfo.EINK_SCREEN)
-					hasHardwareMenuKey = false;
-				else if (DeviceInfo.getSDKLevel() < DeviceInfo.ICE_CREAM_SANDWICH)
-					hasHardwareMenuKey = true;
-				else
-					hasHardwareMenuKey = false;
+				hasHardwareMenuKey = false;
 			}
 		}
 		return hasHardwareMenuKey;

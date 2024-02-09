@@ -42,24 +42,16 @@ public class DeviceInfo {
 	public final static int MIN_SCREEN_BRIGHTNESS_VALUE;
 	public final static int MAX_SCREEN_BRIGHTNESS_VALUE;
 	public final static int MAX_SCREEN_BRIGHTNESS_WARM_VALUE;
-	public final static boolean SAMSUNG_BUTTONS_HIGHLIGHT_PATCH;
 	public final static boolean EINK_SCREEN;
 	public final static boolean EINK_SCREEN_REGAL;
 	public final static boolean EINK_HAVE_FRONTLIGHT;
 	public final static boolean EINK_HAVE_NATURAL_BACKLIGHT;
 	public final static boolean EINK_SCREEN_UPDATE_MODES_SUPPORTED;
-	public final static boolean NOOK_NAVIGATION_KEYS;
-	public final static boolean EINK_NOOK;
-	public final static boolean EINK_NOOK_120;
 	public final static boolean EINK_ONYX;
-	public final static boolean EINK_DNS;
 	public final static boolean EINK_TOLINO;
 	public final static boolean FORCE_HC_THEME;
-	public final static boolean EINK_SONY;
 	public final static boolean EINK_ENERGYSYSTEM;
-	public final static boolean SONY_NAVIGATION_KEYS;
 	public final static boolean USE_CUSTOM_TOAST;
-	public final static boolean AMOLED_SCREEN;
 	public final static boolean POCKETBOOK;
 	public final static boolean ONYX_BUTTONS_LONG_PRESS_NOT_AVAILABLE;
 	public final static boolean ONYX_HAVE_FRONTLIGHT;
@@ -72,15 +64,12 @@ public class DeviceInfo {
 	public final static boolean USE_OPENGL = true;
 	public final static int PIXEL_FORMAT;
 	public final static String  DEF_FONT_FACE;
-	public final static boolean USE_BITMAP_MEMORY_HACK; // revert volume keys in landscape mode
 	public final static Integer DEF_FONT_SIZE;
 	public final static boolean ONE_COLUMN_IN_LANDSCAPE;
 	
 	// minimal screen backlight level percent for different devices
 	private static final String[] MIN_SCREEN_BRIGHTNESS_DB = {
 		"LGE;LG-P500",       "6", // LG Optimus One
-		"samsung;GT-I9003",  "6", // Samsung i9003
-		"Samsung;GT-I9000",  "1", // Samsung Galaxy S
 		"Samsung;GT-I9100",  "1", // Samsung Galaxy S2
 		"Samsung;GT-I9300",  "1", // Samsung Galaxy S3
 		"Samsung;GT-I9500",  "1", // Samsung Galaxy S4
@@ -94,72 +83,30 @@ public class DeviceInfo {
 		"*;Kindle Fire",     "6",
 		"Samsung;GT-S5830",  "6",
 		"HUAWEI;U8800",      "6",
-		"Motorola;Milestone XT720", "6",
 		"Foxconn;PocketBook A10", "3",
 		"*;*;*;tolino",	     "1",
 		// TODO: more devices here
 	};
 
-	public final static int ICE_CREAM_SANDWICH = 14;
-	public final static int HONEYCOMB = 11;
-
-	private static int sdkInt = 0;
-	public static int getSDKLevel() {
-		if (sdkInt > 0)
-			return sdkInt;
-		// hack for Android 1.5
-		sdkInt = 3;
-		Field fld;
-		try {
-			Class<?> cl = android.os.Build.VERSION.class;
-			fld = cl.getField("SDK_INT");
-			sdkInt = fld.getInt(cl);
-			Log.i("cr3", "API LEVEL " + sdkInt + " detected");
-		} catch (SecurityException e) {
-			// ignore
-		} catch (NoSuchFieldException e) {
-			// ignore
-		} catch (IllegalArgumentException e) {
-			// ignore
-		} catch (IllegalAccessException e) {
-			// ignore
-		}
-		return sdkInt;
-	}
-	
-	public static boolean supportsActionBar() {
-		return getSDKLevel() >= HONEYCOMB;
-	}
-	
 	static {
 		MANUFACTURER = getBuildField("MANUFACTURER");
 		MODEL = getBuildField("MODEL");
 		DEVICE = getBuildField("DEVICE");
 		PRODUCT = getBuildField("PRODUCT");
 		BRAND = getBuildField("BRAND");
-		SAMSUNG_BUTTONS_HIGHLIGHT_PATCH = MANUFACTURER.toLowerCase().contentEquals("samsung") &&
-		        (MODEL.contentEquals("GT-S5830") || MODEL.contentEquals("GT-S5660")); // More models?
-		AMOLED_SCREEN = MANUFACTURER.toLowerCase().contentEquals("samsung") &&
-        		(MODEL.toLowerCase().startsWith("gt-i")); // AMOLED screens: GT-IXXXX
-		EINK_NOOK = MANUFACTURER.toLowerCase().contentEquals("barnesandnoble") &&
-				(PRODUCT.contentEquals("NOOK") || MODEL.contentEquals("NOOK") || MODEL.contentEquals("BNRV350") || MODEL.contentEquals("BNRV300") || MODEL.contentEquals("BNRV500")) &&
-				DEVICE.toLowerCase().contentEquals("zoom2");
-		EINK_NOOK_120 = EINK_NOOK && (MODEL.contentEquals("BNRV350") || MODEL.contentEquals("BNRV300") || MODEL.contentEquals("BNRV500"));
-		EINK_SONY = MANUFACTURER.toLowerCase().contentEquals("sony") && MODEL.startsWith("PRS-T");
+
 		//MANUFACTURER=Onyx, MODEL=*; All ONYX BOOX Readers have e-ink screen
 		EINK_ONYX = (MANUFACTURER.toLowerCase().contentEquals("onyx") || MANUFACTURER.toLowerCase().contentEquals("onyx-intl")) &&
 				(BRAND.toLowerCase().contentEquals("onyx") || BRAND.toLowerCase().contentEquals("maccentre") || BRAND.toLowerCase().contentEquals("maccenter")) &&
 				MODEL.length() > 0;
 		EINK_ENERGYSYSTEM = (
 			(BRAND.toLowerCase().contentEquals("energysistem")||BRAND.toLowerCase().contentEquals("energysystem")) &&  MODEL.toLowerCase().startsWith("ereader"));
-		//MANUFACTURER -DNS, DEVICE -BK6004C, MODEL - DNS Airbook EGH602, PRODUCT - BK6004C
-		EINK_DNS = MANUFACTURER.toLowerCase().contentEquals("dns") && MODEL.startsWith("DNS Airbook EGH");
 
 		EINK_TOLINO = (BRAND.toLowerCase().contentEquals("tolino") && (MODEL.toLowerCase().contentEquals("imx50_rdp")) ) || 		// SHINE
 				(MODEL.toLowerCase().contentEquals("tolino") && DEVICE.toLowerCase().contentEquals("tolino_vision2")); //Tolino Vision HD4 doesn't show any Brand, only Model=tolino and  DEVICE=tolino_vision2)
 
 
-		EINK_SCREEN = EINK_SONY || EINK_NOOK || EINK_ENERGYSYSTEM || EINK_DNS || EINK_TOLINO; // TODO: set to true for eink devices like Nook Touch
+		EINK_SCREEN = EINK_ENERGYSYSTEM || EINK_TOLINO;
 
 		// On Onyx Boox Monte Cristo 3 (and possible Monte Cristo, Monte Cristo 2) long press action on buttons are catch by system and not available for application
 		// TODO: check this on other ONYX BOOX Readers
@@ -235,24 +182,20 @@ public class DeviceInfo {
 		EINK_HAVE_NATURAL_BACKLIGHT = ONYX_HAVE_NATURAL_BACKLIGHT;	// TODO: add other e-ink devices with natural backlight support
 
 		POCKETBOOK = MODEL.toLowerCase().startsWith("pocketbook") || MODEL.toLowerCase().startsWith("obreey");
-		
-		NOOK_NAVIGATION_KEYS = EINK_NOOK; // TODO: add autodetect
-		SONY_NAVIGATION_KEYS = EINK_SONY;
-		EINK_SCREEN_UPDATE_MODES_SUPPORTED = EINK_SCREEN && ( EINK_NOOK || EINK_TOLINO || EINK_ONYX ); // TODO: add autodetect
+
+		EINK_SCREEN_UPDATE_MODES_SUPPORTED = EINK_SCREEN && ( EINK_TOLINO || EINK_ONYX ); // TODO: add autodetect
 		FORCE_HC_THEME = EINK_SCREEN || MODEL.equalsIgnoreCase("pocketbook vision");
 		USE_CUSTOM_TOAST = EINK_SCREEN;
 		NOFLIBUSTA = POCKETBOOK;
 		NAVIGATE_LEFTRIGHT = POCKETBOOK && DEVICE.startsWith("EP10");
 		REVERT_LANDSCAPE_VOLUME_KEYS = POCKETBOOK && DEVICE.startsWith("EP5A");
-		MIN_SCREEN_BRIGHTNESS_VALUE = getMinBrightness(AMOLED_SCREEN ? 2 : (getSDKLevel() >= ICE_CREAM_SANDWICH ? 8 : 16));
-		//BUFFER_COLOR_FORMAT = getSDKLevel() >= HONEYCOMB ? android.graphics.Bitmap.Config.ARGB_8888 : android.graphics.Bitmap.Config.RGB_565;
+		MIN_SCREEN_BRIGHTNESS_VALUE = 8;
 		//BUFFER_COLOR_FORMAT = android.graphics.Bitmap.Config.ARGB_8888;
 		BUFFER_COLOR_FORMAT = EINK_SCREEN || USE_OPENGL ? android.graphics.Bitmap.Config.ARGB_8888 : android.graphics.Bitmap.Config.RGB_565;
 		PIXEL_FORMAT = (DeviceInfo.BUFFER_COLOR_FORMAT == android.graphics.Bitmap.Config.RGB_565) ? PixelFormat.RGB_565 : PixelFormat.RGBA_8888;
-		
-		DEF_FONT_FACE = getSDKLevel() >= ICE_CREAM_SANDWICH ? "Roboto" : "Droid Sans";
-		
-		USE_BITMAP_MEMORY_HACK = getSDKLevel() < ICE_CREAM_SANDWICH;
+
+		DEF_FONT_FACE = "Roboto";
+
 		ONE_COLUMN_IN_LANDSCAPE = POCKETBOOK && DEVICE.endsWith("SURFPAD");
 		DEF_FONT_SIZE = POCKETBOOK && DEVICE.endsWith("SURFPAD") ? 18 : null;
 	}
@@ -270,7 +213,7 @@ public class DeviceInfo {
 	
 	static {
 		Log.i("cr3", "DeviceInfo: MANUFACTURER=" + MANUFACTURER + ", MODEL=" + MODEL + ", DEVICE=" + DEVICE + ", PRODUCT=" + PRODUCT + ", BRAND=" + BRAND);
-		Log.i("cr3", "DeviceInfo: MIN_SCREEN_BRIGHTNESS_VALUE=" + MIN_SCREEN_BRIGHTNESS_VALUE + "; MAX_SCREEN_BRIGHTNESS_VALUE=" + MAX_SCREEN_BRIGHTNESS_VALUE + "; EINK_SCREEN=" + EINK_SCREEN + "; EINK_SCREEN_REGAL=" + EINK_SCREEN_REGAL + ", AMOLED_SCREEN=" + AMOLED_SCREEN + ", POCKETBOOK=" + POCKETBOOK);
+		Log.i("cr3", "DeviceInfo: MIN_SCREEN_BRIGHTNESS_VALUE=" + MIN_SCREEN_BRIGHTNESS_VALUE + "; MAX_SCREEN_BRIGHTNESS_VALUE=" + MAX_SCREEN_BRIGHTNESS_VALUE + "; EINK_SCREEN=" + EINK_SCREEN + "; EINK_SCREEN_REGAL=" + EINK_SCREEN_REGAL + ", POCKETBOOK=" + POCKETBOOK);
 	}
 
 	// multiple patterns divided by |, * wildcard can be placed at beginning and/or end of pattern

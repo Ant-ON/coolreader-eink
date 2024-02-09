@@ -263,10 +263,8 @@ public class TTSToolbarDlg implements Settings {
 		boolean flg = "1".equals(value);
 		switch (key) {
 			case PROP_APP_MOTION_TIMEOUT:
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
-					mMotionTimeout = Utils.parseInt(value, 0, 0, 100);
-					mMotionTimeout = mMotionTimeout * 60 * 1000; // Convert minutes to msecs
-				}
+				mMotionTimeout = Utils.parseInt(value, 0, 0, 100);
+				mMotionTimeout = mMotionTimeout * 60 * 1000; // Convert minutes to msecs
 				break;
 			case PROP_APP_TTS_SPEED:
 				mTTSSpeedPercent = Utils.parseInt(value, 50, 0, 100);
@@ -346,7 +344,7 @@ public class TTSToolbarDlg implements Settings {
 						case PLAYING:
 							isSpeaking = true;
 							BackgroundThread.instance().postGUI(() -> mPlayPauseButton.setImageResource(Utils.resolveResourceIdByAttr(mCoolReader, R.attr.ic_media_pause_drawable, R.drawable.ic_media_pause)));
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR && mMotionTimeout > 0)
+							if (mMotionTimeout > 0)
 								startMotionWatchdog();
 							break;
 						case PAUSED:

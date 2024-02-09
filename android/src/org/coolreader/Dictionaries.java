@@ -209,7 +209,7 @@ public class Dictionaries {
 			} else {
 				intent0.setPackage(curDict.packageName);
 			}
-			intent0.addFlags(DeviceInfo.getSDKLevel() >= 7 ? Intent.FLAG_ACTIVITY_CLEAR_TASK : Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			if (s!=null)
 				intent0.putExtra(curDict.dataKey, s);
 			try {

@@ -678,7 +678,7 @@ public class TTSControlService extends BaseService {
 				mTTS = null;
 			}
 		}, INIT_TTS_TIMEOUT);
-		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH && null != engine && engine.length() > 0)
+		if (null != engine && engine.length() > 0)
 			mTTS = new TextToSpeech(this, onInitListener, engine);
 		else
 			mTTS = new TextToSpeech(this, onInitListener);
@@ -699,21 +699,17 @@ public class TTSControlService extends BaseService {
 			if (null != mNotificationManager) {
 				Notification notification = buildNotification(mCurrentUtterance);
 				if (null != notification) {
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
-						boolean isSpeaking;
-						synchronized (mLocker) {
-							isSpeaking = State.PLAYING == mState;
-						}
-						if (isSpeaking) {
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-								startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-							else
-								startForeground(NOTIFICATION_ID, notification);
-						} else {
-							stopForeground(false);
-							mNotificationManager.notify(NOTIFICATION_ID, notification);
-						}
+					boolean isSpeaking;
+					synchronized (mLocker) {
+						isSpeaking = State.PLAYING == mState;
+					}
+					if (isSpeaking) {
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+							startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+						else
+							startForeground(NOTIFICATION_ID, notification);
 					} else {
+						stopForeground(false);
 						mNotificationManager.notify(NOTIFICATION_ID, notification);
 					}
 				} else {
@@ -797,10 +793,7 @@ public class TTSControlService extends BaseService {
 					// update notification
 					Notification notification = buildNotification(mCurrentUtterance);
 					if (null != notification) {
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR)
-							startForeground(NOTIFICATION_ID, notification);
-						else
-							mNotificationManager.notify(NOTIFICATION_ID, notification);
+						startForeground(NOTIFICATION_ID, notification);
 					} else {
 						log.e("Failed to build notification!");
 					}
@@ -828,8 +821,7 @@ public class TTSControlService extends BaseService {
 		// update notification
 		Notification notification = buildNotification(null);
 		if (null != notification) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR)
-				stopForeground(false);
+			stopForeground(false);
 			mNotificationManager.notify(NOTIFICATION_ID, notification);
 		} else {
 			log.e("Failed to build notification!");
@@ -849,8 +841,7 @@ public class TTSControlService extends BaseService {
 				mPrevState = mState;
 			}
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR)
-			stopForeground(true);
+		stopForeground(true);
 		mNotificationManager.cancel(NOTIFICATION_ID);
 		abandonAudioFocusRequestWrapper();
 		try {
@@ -1304,101 +1295,98 @@ public class TTSControlService extends BaseService {
 		}
 		if (0 == title.length())
 			title = "CoolReader";
-		Notification notification;
+
 		Intent notificationIntent = new Intent(this, CoolReader.class);
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			Notification.Builder builder;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
-				// create notification channel
-				if (!mChannelCreated) {
-					NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "CoolReader TTS", NotificationManager.IMPORTANCE_DEFAULT);
-					channel.setDescription("CoolReader TTS control");
-					channel.setSound(null, null);
-					// Register the channel with the system; you can't change the importance
-					// or other notification behaviors after this
-					if (null != mNotificationManager) {
-						mNotificationManager.createNotificationChannel(channel);
-						mChannelCreated = true;
-					}
+
+		Notification.Builder builder;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+			// create notification channel
+			if (!mChannelCreated) {
+				NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "CoolReader TTS", NotificationManager.IMPORTANCE_DEFAULT);
+				channel.setDescription("CoolReader TTS control");
+				channel.setSound(null, null);
+				// Register the channel with the system; you can't change the importance
+				// or other notification behaviors after this
+				if (null != mNotificationManager) {
+					mNotificationManager.createNotificationChannel(channel);
+					mChannelCreated = true;
 				}
-				if (mChannelCreated)
-					builder = builder.setChannelId(NOTIFICATION_CHANNEL_ID);
-				else
-					return null;
-			} else {
-				builder = new Notification.Builder(this);
 			}
-			builder = builder.setDefaults(0);
-			builder = builder.setSmallIcon(R.drawable.cr3_logo_button_hc);
-			builder = builder.setContentTitle(title);
-			if (null != utterance && !utterance.isEmpty())
-				builder = builder.setContentText(utterance);
+			if (mChannelCreated)
+				builder.setChannelId(NOTIFICATION_CHANNEL_ID);
 			else
-				builder = builder.setContentText("...");
-			builder = builder.setOngoing(true);
-			builder = builder.setAutoCancel(false);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-				builder = builder.setPriority(Notification.PRIORITY_DEFAULT);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-				builder = builder.setShowWhen(false);
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-					builder = builder.setLocalOnly(true);
-					// add actions
-					// play/pause
-					PendingIntent playPauseIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_PLAY_PAUSE), 0);
-					Notification.Action.Builder actionBld = new Notification.Action.Builder(mState == State.PAUSED ? R.drawable.ic_media_play : R.drawable.ic_media_pause, "", playPauseIntent);
-					Notification.Action actionPlayPause = actionBld.build();
-					builder = builder.addAction(actionPlayPause);
-					// prev
-					PendingIntent prevIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_PREV), 0);
-					actionBld = new Notification.Action.Builder(R.drawable.ic_media_rew, "", prevIntent);
-					Notification.Action actionPrev = actionBld.build();
-					builder = builder.addAction(actionPrev);
-					// next
-					PendingIntent nextIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_NEXT), 0);
-					actionBld = new Notification.Action.Builder(R.drawable.ic_media_ff, "", nextIntent);
-					Notification.Action actionNext = actionBld.build();
-					builder = builder.addAction(actionNext);
-					// stop
-					PendingIntent stopIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_STOP), 0);
-					actionBld = new Notification.Action.Builder(R.drawable.ic_media_stop, "", stopIntent);
-					Notification.Action actionStop = actionBld.build();
-					builder = builder.addAction(actionStop);
-					//
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-						builder = builder.setSound(null, null);
-						builder = builder.setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 3).setMediaSession(mMediaSession.getSessionToken()));
-						builder = builder.setColor(Color.GRAY);
-						builder = builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-						if (null != mCoverBitmap)
-							builder = builder.setLargeIcon(mCoverBitmap);
-						else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-							builder = builder.setLargeIcon(Icon.createWithResource(this, R.drawable.cr3_logo_button));
-					}
-				}
-			} else
-				builder = builder.setWhen(System.currentTimeMillis());
-			// delete intent
-			PendingIntent delPendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_STOP), 0);
-			builder = builder.setDeleteIntent(delPendingIntent);
-			builder = builder.setContentIntent(pendingIntent);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-				notification = builder.build();
-			else
-				notification = builder.getNotification();
+				return null;
 		} else {
-			notification = new Notification(R.drawable.cr3_logo_button, "CoolReader", System.currentTimeMillis());
-			notification.contentIntent = pendingIntent;
+			builder = new Notification.Builder(this);
 		}
-		return notification;
+		builder.setDefaults(0)
+			.setSmallIcon(R.drawable.cr3_logo_button_hc)
+			.setContentTitle(title);
+		if (null != utterance && !utterance.isEmpty())
+			builder = builder.setContentText(utterance);
+		else
+			builder = builder.setContentText("...");
+		builder.setOngoing(true)
+			.setAutoCancel(false)
+			.setPriority(Notification.PRIORITY_DEFAULT);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+			builder.setShowWhen(false);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+				builder.setLocalOnly(true);
+				// add actions
+				// play/pause
+				PendingIntent playPauseIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_PLAY_PAUSE), 0);
+				Notification.Action.Builder actionBld = new Notification.Action.Builder(mState == State.PAUSED ? R.drawable.ic_media_play : R.drawable.ic_media_pause, "", playPauseIntent);
+				Notification.Action actionPlayPause = actionBld.build();
+				builder.addAction(actionPlayPause);
+				// prev
+				PendingIntent prevIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_PREV), 0);
+				actionBld = new Notification.Action.Builder(R.drawable.ic_media_rew, "", prevIntent);
+				Notification.Action actionPrev = actionBld.build();
+				builder.addAction(actionPrev);
+				// next
+				PendingIntent nextIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_NEXT), 0);
+				actionBld = new Notification.Action.Builder(R.drawable.ic_media_ff, "", nextIntent);
+				Notification.Action actionNext = actionBld.build();
+				builder.addAction(actionNext);
+				// stop
+				PendingIntent stopIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_STOP), 0);
+				actionBld = new Notification.Action.Builder(R.drawable.ic_media_stop, "", stopIntent);
+				Notification.Action actionStop = actionBld.build();
+				builder.addAction(actionStop);
+				//
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					builder.setSound(null, null);
+					builder.setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 3).setMediaSession(mMediaSession.getSessionToken()));
+					builder.setColor(Color.GRAY);
+					builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+					if (null != mCoverBitmap)
+						builder.setLargeIcon(mCoverBitmap);
+					else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+						builder.setLargeIcon(Icon.createWithResource(this, R.drawable.cr3_logo_button));
+				}
+			}
+		} else
+			builder.setWhen(System.currentTimeMillis());
+		// delete intent
+		PendingIntent delPendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(TTS_CONTROL_ACTION_STOP), 0);
+		builder.setDeleteIntent(delPendingIntent);
+		builder.setContentIntent(pendingIntent);
+
+		return builder.build();
 	}
 
 	private void setupTTSHandlers() {
 		if (null != mTTS) {
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-				mTTS.setOnUtteranceCompletedListener(utteranceId -> {
+			mTTS.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+				@Override
+				public void onStart(String utteranceId) {
+				}
+
+				@Override
+				public void onDone(String utteranceId) {
 					if (null != mOnUtteranceStopOnce) {
 						mOnUtteranceStopOnce.run();
 						mOnUtteranceStopOnce = null;
@@ -1407,15 +1395,29 @@ public class TTSControlService extends BaseService {
 						mStatusListener.onUtteranceDone();
 						mStatusListener.onNextSentenceRequested(mBinder);
 					}
-				});
-			} else {
-				mTTS.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-					@Override
-					public void onStart(String utteranceId) {
+					synchronized (mLocker) {
+						if (null != mMediaPlayer) {
+							mMediaPlayer.stop();
+							mMediaPlayer.release();
+							mMediaPlayer = null;
+						}
 					}
+					mContinuousErrors = 0;
+				}
 
-					@Override
-					public void onDone(String utteranceId) {
+				@Override
+				public void onError(String utteranceId) {
+					log.e("TTS error");
+					mContinuousErrors++;
+					if (mContinuousErrors >= MAX_CONTINUOUS_ERRORS) {
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+							mMediaSessionCallback.onStop();
+						else
+							stopWrapper_api_less_than_21();
+						if (null != mStatusListener)
+							mStatusListener.onError(0);
+					} else {
+						// If error count is low - process as 'onDone' event
 						if (null != mOnUtteranceStopOnce) {
 							mOnUtteranceStopOnce.run();
 							mOnUtteranceStopOnce = null;
@@ -1431,78 +1433,30 @@ public class TTSControlService extends BaseService {
 								mMediaPlayer = null;
 							}
 						}
-						mContinuousErrors = 0;
 					}
+				}
 
-					@Override
-					public void onError(String utteranceId) {
-						log.e("TTS error");
-						mContinuousErrors++;
-						if (mContinuousErrors >= MAX_CONTINUOUS_ERRORS) {
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-								mMediaSessionCallback.onStop();
-							else
-								stopWrapper_api_less_than_21();
-							if (null != mStatusListener)
-								mStatusListener.onError(0);
-						} else {
-							// If error count is low - process as 'onDone' event
-							if (null != mOnUtteranceStopOnce) {
-								mOnUtteranceStopOnce.run();
-								mOnUtteranceStopOnce = null;
-							}
-							if (null != mStatusListener) {
-								mStatusListener.onUtteranceDone();
-								mStatusListener.onNextSentenceRequested(mBinder);
-							}
-							synchronized (mLocker) {
-								if (null != mMediaPlayer) {
-									mMediaPlayer.stop();
-									mMediaPlayer.release();
-									mMediaPlayer = null;
-								}
-							}
-						}
-					}
-
-					// API 21
-					@Override
-					public void onError(String utteranceId, int errorCode) {
-						log.e("TTS error, code=" + errorCode);
-						mContinuousErrors++;
-						if (mContinuousErrors >= MAX_CONTINUOUS_ERRORS) {
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-								mMediaSessionCallback.onStop();
-							else
-								stopWrapper_api_less_than_21();
-							if (null != mStatusListener)
-								mStatusListener.onError(errorCode);
-						} else {
-							// If error count is low - process as 'onDone' event
-							if (null != mOnUtteranceStopOnce) {
-								mOnUtteranceStopOnce.run();
-								mOnUtteranceStopOnce = null;
-							}
-							if (null != mStatusListener) {
-								mStatusListener.onUtteranceDone();
-								mStatusListener.onNextSentenceRequested(mBinder);
-							}
-							synchronized (mLocker) {
-								if (null != mMediaPlayer) {
-									mMediaPlayer.stop();
-									mMediaPlayer.release();
-									mMediaPlayer = null;
-								}
-							}
-						}
-					}
-
-					// API 23
-					@Override
-					public void onStop(String utteranceId, boolean interrupted) {
+				// API 21
+				@Override
+				public void onError(String utteranceId, int errorCode) {
+					log.e("TTS error, code=" + errorCode);
+					mContinuousErrors++;
+					if (mContinuousErrors >= MAX_CONTINUOUS_ERRORS) {
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+							mMediaSessionCallback.onStop();
+						else
+							stopWrapper_api_less_than_21();
+						if (null != mStatusListener)
+							mStatusListener.onError(errorCode);
+					} else {
+						// If error count is low - process as 'onDone' event
 						if (null != mOnUtteranceStopOnce) {
 							mOnUtteranceStopOnce.run();
 							mOnUtteranceStopOnce = null;
+						}
+						if (null != mStatusListener) {
+							mStatusListener.onUtteranceDone();
+							mStatusListener.onNextSentenceRequested(mBinder);
 						}
 						synchronized (mLocker) {
 							if (null != mMediaPlayer) {
@@ -1512,21 +1466,37 @@ public class TTSControlService extends BaseService {
 							}
 						}
 					}
+				}
 
-					// API 24
-					public void onAudioAvailable(String utteranceId, byte[] audio) {
-						// nothing...
+				// API 23
+				@Override
+				public void onStop(String utteranceId, boolean interrupted) {
+					if (null != mOnUtteranceStopOnce) {
+						mOnUtteranceStopOnce.run();
+						mOnUtteranceStopOnce = null;
 					}
+					synchronized (mLocker) {
+						if (null != mMediaPlayer) {
+							mMediaPlayer.stop();
+							mMediaPlayer.release();
+							mMediaPlayer = null;
+						}
+					}
+				}
 
-					// API 24
-					public void onBeginSynthesis(String utteranceId,
-												 int sampleRateInHz,
-												 int audioFormat,
-												 int channelCount) {
-						// nothing...
-					}
-				});
-			}
+				// API 24
+				public void onAudioAvailable(String utteranceId, byte[] audio) {
+					// nothing...
+				}
+
+				// API 24
+				public void onBeginSynthesis(String utteranceId,
+											 int sampleRateInHz,
+											 int audioFormat,
+											 int channelCount) {
+					// nothing...
+				}
+			});
 		}
 	}
 
@@ -1556,13 +1526,11 @@ public class TTSControlService extends BaseService {
 							break;
 					}
 				}
-			} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+			} else {
 				int res = mAudioManager.requestAudioFocus(mAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 				mPlaybackNowAuthorized = AudioManager.AUDIOFOCUS_REQUEST_GRANTED == res;
 				mPlaybackDelayed = false;
 				mResumeOnFocusGain = false;
-			} else {
-				mPlaybackNowAuthorized = true;
 			}
 		} else {
 			mPlaybackNowAuthorized = true;
@@ -1576,7 +1544,7 @@ public class TTSControlService extends BaseService {
 				if (null != mAudioFocusRequest) {
 					mAudioManager.abandonAudioFocusRequest(mAudioFocusRequest);
 				}
-			} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+			} else {
 				mAudioManager.abandonAudioFocus(mAudioFocusChangeListener);
 			}
 		}

@@ -31,7 +31,6 @@ import android.util.Log;
 
 import org.coolreader.crengine.BookInfo;
 import org.coolreader.crengine.Bookmark;
-import org.coolreader.crengine.DeviceInfo;
 import org.coolreader.crengine.Engine;
 import org.coolreader.crengine.FileInfo;
 import org.coolreader.crengine.L;
@@ -46,7 +45,6 @@ import java.util.Collection;
 
 public class CRDBService extends BaseService {
 	public static final Logger log = L.create("db");
-	public static final Logger vlog = L.create("db", Log.ASSERT);
 
     private MainDB mainDB = new MainDB();
     private CoverDB coverDB = new CoverDB();
@@ -82,9 +80,7 @@ public class CRDBService extends BaseService {
     }
 
     private File getDatabaseDir() {
-    	//File storage = Environment.getExternalStorageDirectory();
-    	File storage = DeviceInfo.EINK_NOOK ? new File("/media/") : Environment.getExternalStorageDirectory();
-    	File cr3dir = new File(storage, ".cr3");
+    	File cr3dir = new File(Environment.getExternalStorageDirectory(), ".cr3");
     	if (cr3dir.isDirectory())
     		cr3dir.mkdirs();
     	if (!cr3dir.isDirectory() || !cr3dir.canWrite()) {

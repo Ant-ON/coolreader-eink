@@ -53,7 +53,6 @@ import org.coolreader.plugins.OnlineStoreBook;
 import org.coolreader.plugins.OnlineStoreBookInfo;
 import org.coolreader.plugins.OnlineStorePluginManager;
 import org.coolreader.plugins.OnlineStoreWrapper;
-import org.koekak.android.ebookdownloader.SonyBookSelector;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -730,10 +729,6 @@ public class FileBrowser extends LinearLayout implements FileInfoChangeListener 
 
 					@Override
 					public void onDownloadEnd(String type, String url, File file) {
-                        if (DeviceInfo.EINK_SONY) {
-                            SonyBookSelector selector = new SonyBookSelector(mActivity);
-                            selector.notifyScanner(file.getAbsolutePath());
-                        }
 						mEngine.hideProgress();
 						//mActivity.showToast("Download is finished");
 						FileInfo fi = new FileInfo(file);

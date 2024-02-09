@@ -636,7 +636,7 @@ public class Engine {
 		}
 		mFonts = findFonts();
 		findExternalHyphDictionaries();
-		if (!initInternal(mFonts, DeviceInfo.getSDKLevel())) {
+		if (!initInternal(mFonts, Build.VERSION.SDK_INT)) {
 			log.i("Engine.initInternal failed!");
 			throw new RuntimeException("Cannot initialize CREngine JNI");
 		}
@@ -1140,8 +1140,7 @@ public class Engine {
 	private static void initCacheDirectory() {
 		String cacheDirName = null;
 		// SD card
-		cacheDirName = createCacheDir(
-				DeviceInfo.EINK_NOOK ? new File("/media/") : Environment.getExternalStorageDirectory(), CACHE_BASE_DIR_NAME);
+		cacheDirName = createCacheDir(Environment.getExternalStorageDirectory(), CACHE_BASE_DIR_NAME);
 		// non-standard SD mount points
 		log.i(cacheDirName
 				+ " will be used for cache, maxCacheSize=" + CACHE_DIR_SIZE);
@@ -1345,7 +1344,7 @@ public class Engine {
 		Map<String, String> map = new LinkedHashMap<String, String>();
 
 		// standard external directory
-		String sdpath = DeviceInfo.EINK_NOOK ? "/media/" : Environment.getExternalStorageDirectory().getAbsolutePath();
+		String sdpath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		// dirty fix
 		if ("/nand".equals(sdpath) && new File("/sdcard").isDirectory())
 			sdpath = "/sdcard";
@@ -1991,7 +1990,7 @@ public class Engine {
 		}
 		mFonts = findFonts();
 		findExternalHyphDictionaries();
-		if (!initInternal(mFonts, DeviceInfo.getSDKLevel())) {
+		if (!initInternal(mFonts, Build.VERSION.SDK_INT)) {
 			log.i("Engine.initInternal failed!");
 			throw new RuntimeException("Cannot initialize CREngine JNI");
 		}

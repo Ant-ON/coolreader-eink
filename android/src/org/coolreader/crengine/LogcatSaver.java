@@ -36,9 +36,6 @@ public class LogcatSaver {
 	/*
 	// May be called in Engine static initialization
 	public static boolean logcatPruneSetup() {
-		if (DeviceInfo.getSDKLevel() < Build.VERSION_CODES.M)
-			// logcat prune list is available since Android 6.0 (API 23)
-			return true;
 		// Add this application (pid) to logcat white prune list
 		// https://developer.android.com/studio/command-line/logcat.html#options
 		// Usefully on rooted device.
@@ -76,9 +73,6 @@ public class LogcatSaver {
 	// May be called in Services.stopServices()
 	public static boolean logcatPruneDefault() {
 		// Set default logcat prune list
-		if (DeviceInfo.getSDKLevel() < Build.VERSION_CODES.M)
-			// logcat prune list is available since Android 6.0 (API 23)
-			return true;
 		boolean res = false;
 		Process process = null;
 		try {

@@ -578,83 +578,72 @@ public class SyncService extends BaseService {
 
 	private Notification buildNotification(Synchronizer.SyncDirection direction, int current, int total) {
 		String title = getString(R.string.app_name);
-		Notification notification;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			Notification.Builder builder;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
-				// create notification channel
-				if (!mChannelCreated) {
-					NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "CoolReader TTS", NotificationManager.IMPORTANCE_LOW);
-					channel.setDescription("CoolReader TTS control");
-					channel.setSound(null, null);
-					// Register the channel with the system; you can't change the importance
-					// or other notification behaviors after this
-					if (null != mNotificationManager) {
-						mNotificationManager.createNotificationChannel(channel);
-						mChannelCreated = true;
-					}
+
+		Notification.Builder builder;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+			// create notification channel
+			if (!mChannelCreated) {
+				NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "CoolReader TTS", NotificationManager.IMPORTANCE_LOW);
+				channel.setDescription("CoolReader TTS control");
+				channel.setSound(null, null);
+				// Register the channel with the system; you can't change the importance
+				// or other notification behaviors after this
+				if (null != mNotificationManager) {
+					mNotificationManager.createNotificationChannel(channel);
+					mChannelCreated = true;
 				}
-				if (mChannelCreated)
-					builder = builder.setChannelId(NOTIFICATION_CHANNEL_ID);
-				else
-					return null;
-			} else {
-				builder = new Notification.Builder(this);
 			}
-			builder = builder.setDefaults(0);
-			builder = builder.setSmallIcon(R.drawable.cr3_logo_button_hc);
-			builder = builder.setContentTitle(title);
-			switch (direction) {
-				case SyncFrom:
-					builder = builder.setContentText(getString(R.string.cloud_synchronization_from_));
-					break;
-				case SyncTo:
-					builder = builder.setContentText(getString(R.string.cloud_synchronization_to_));
-					break;
-				default:
-					builder = builder.setContentText("Synchronization...");
-					break;
-			}
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-				if (current >= 0 && total > 0)
-					builder = builder.setProgress(total, current, false);
-				else
-					builder = builder.setProgress(total, current, true);
-			}
-			builder = builder.setOngoing(true);
-			builder = builder.setAutoCancel(false);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-				builder = builder.setPriority(Notification.PRIORITY_LOW);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-				builder = builder.setShowWhen(false);
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-					builder = builder.setLocalOnly(true);
-					// add actions
-					// cancel
-					PendingIntent cancelIntent = PendingIntent.getBroadcast(this, 0, new Intent(SYNC_ACTION_CANCEL), 0);
-					Notification.Action.Builder actionBld = new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.dlg_button_cancel), cancelIntent);
-					Notification.Action actionCancel = actionBld.build();
-					builder = builder.addAction(actionCancel);
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-						builder = builder.setSound(null, null);
-						builder = builder.setColor(Color.GRAY);
-						builder = builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-					}
-				}
-			} else
-				builder = builder.setWhen(System.currentTimeMillis());
-			// delete intent (no-op)
-			PendingIntent delPendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(SYNC_ACTION_NOOP), 0);
-			builder = builder.setDeleteIntent(delPendingIntent);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-				notification = builder.build();
+			if (mChannelCreated)
+				builder = builder.setChannelId(NOTIFICATION_CHANNEL_ID);
 			else
-				notification = builder.getNotification();
+				return null;
 		} else {
-			notification = new Notification(R.drawable.cr3_logo_button, title, System.currentTimeMillis());
+			builder = new Notification.Builder(this);
 		}
-		return notification;
+		builder.setDefaults(0)
+			.setSmallIcon(R.drawable.cr3_logo_button_hc)
+			.setContentTitle(title);
+		switch (direction) {
+			case SyncFrom:
+				builder.setContentText(getString(R.string.cloud_synchronization_from_));
+				break;
+			case SyncTo:
+				builder.setContentText(getString(R.string.cloud_synchronization_to_));
+				break;
+			default:
+				builder.setContentText("Synchronization...");
+				break;
+		}
+		if (current >= 0 && total > 0)
+			builder.setProgress(total, current, false);
+		else
+			builder.setProgress(total, current, true);
+		builder.setOngoing(true)
+			.setAutoCancel(false)
+			.setPriority(Notification.PRIORITY_LOW);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+			builder.setShowWhen(false);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+				builder.setLocalOnly(true);
+				// add actions
+				// cancel
+				PendingIntent cancelIntent = PendingIntent.getBroadcast(this, 0, new Intent(SYNC_ACTION_CANCEL), 0);
+				Notification.Action.Builder actionBld = new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.dlg_button_cancel), cancelIntent);
+				Notification.Action actionCancel = actionBld.build();
+				builder.addAction(actionCancel);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					builder.setSound(null, null)
+						.setColor(Color.GRAY)
+						.setVisibility(Notification.VISIBILITY_PUBLIC);
+				}
+			}
+		} else
+			builder.setWhen(System.currentTimeMillis());
+		// delete intent (no-op)
+		PendingIntent delPendingIntent = PendingIntent.getBroadcast(this, 0, new Intent(SYNC_ACTION_NOOP), 0);
+		builder.setDeleteIntent(delPendingIntent);
+		return builder.getNotification();
 	}
 
 }

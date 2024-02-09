@@ -139,7 +139,7 @@ public class ReaderViewLayout extends ViewGroup implements Settings {
 			}
 			/*
 			  Commented until the appearance of free implementation of the binding to the Google Drive (R)
-			if (DeviceInfo.getSDKLevel() >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 				actionsList.add(ReaderAction.GDRIVE_SYNCTO);
 				actionsList.add(ReaderAction.GDRIVE_SYNCFROM);
 			}

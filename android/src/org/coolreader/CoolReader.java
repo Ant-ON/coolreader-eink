@@ -67,7 +67,6 @@ import org.coolreader.crengine.InterfaceTheme;
 import org.coolreader.crengine.L;
 import org.coolreader.crengine.LogcatSaver;
 import org.coolreader.crengine.Logger;
-import org.coolreader.crengine.N2EpdController;
 import org.coolreader.crengine.OPDSCatalogEditDialog;
 import org.coolreader.crengine.OptionsDialog;
 import org.coolreader.crengine.PositionProperties;
@@ -81,7 +80,6 @@ import org.coolreader.crengine.Utils;
 import org.coolreader.donations.CRDonationService;
 import org.coolreader.tts.OnTTSCreatedListener;
 import org.coolreader.tts.TTSControlServiceAccessor;
-import org.koekak.android.ebookdownloader.SonyBookSelector;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -261,8 +259,6 @@ public class CoolReader extends BaseActivity {
 		} catch (VerifyError e) {
 			log.e("Exception while trying to initialize billing service for donations");
 		}
-
-		N2EpdController.n2MainActivity = this;
 
 		showRootWindow();
 
@@ -454,7 +450,6 @@ public class CoolReader extends BaseActivity {
 		if (null != mGoogleDriveSync)
 			return;
 		// build synchronizer instance
-		// DeviceInfo.getSDKLevel() not applicable here -> compile error about Android API compatibility
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			GoogleDriveRemoteAccess googleDriveRemoteAccess = new GoogleDriveRemoteAccess(this, 30);
 			mGoogleDriveSync = new Synchronizer(this, googleDriveRemoteAccess, getString(R.string.app_name), REQUEST_CODE_GOOGLE_DRIVE_SIGN_IN);
@@ -622,7 +617,6 @@ public class CoolReader extends BaseActivity {
 	}
 
 	private void updateGoogleDriveSynchronizer() {
-		// DeviceInfo.getSDKLevel() not applicable here -> lint error about Android API compatibility
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			if (mGoogleDriveSyncOpts.Enabled) {
 				if (null == mGoogleDriveSync) {
@@ -955,20 +949,6 @@ public class CoolReader extends BaseActivity {
 		// ACTION_TIME_TICK: The current time has changed. Sent every minute.
 		registerReceiver(timeTickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
-		if (DeviceInfo.EINK_SCREEN) {
-			if (DeviceInfo.EINK_SONY) {
-				SharedPreferences pref = getSharedPreferences(PREF_FILE, 0);
-				String res = pref.getString(PREF_LAST_BOOK, null);
-				if (res != null && res.length() > 0) {
-					SonyBookSelector selector = new SonyBookSelector(this);
-					long l = selector.getContentId(res);
-					if (l != 0) {
-						selector.setReadingTime(l);
-						selector.requestBookSelection(l);
-					}
-				}
-			}
-		}
 		/*
 		  Commented until the appearance of free implementation of the binding to the Google Drive (R)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -2198,13 +2178,9 @@ public class CoolReader extends BaseActivity {
 		int lastNoticeMask = getLastNotificationMask();
 		if ((lastNoticeMask & NOTIFICATION_MASK_ALL) == NOTIFICATION_MASK_ALL)
 			return;
-		if (DeviceInfo.getSDKLevel() >= DeviceInfo.HONEYCOMB) {
-			if ((lastNoticeMask & NOTIFICATION_READER_MENU_MASK) == 0) {
-				notification1();
-				return;
-			}
-		}
-		if ((lastNoticeMask & NOTIFICATION_LOGCAT_MASK) == 0) {
+		if ((lastNoticeMask & NOTIFICATION_READER_MENU_MASK) == 0) {
+			notification1();
+		} else if ((lastNoticeMask & NOTIFICATION_LOGCAT_MASK) == 0) {
 			notification2();
 		}
 	}

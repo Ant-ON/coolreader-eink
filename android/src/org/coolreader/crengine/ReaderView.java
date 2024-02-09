@@ -59,19 +59,15 @@ import android.view.View.OnTouchListener;
 import org.coolreader.CoolReader;
 import org.coolreader.R;
 import org.coolreader.crengine.InputDialog.InputHandler;
-import org.koekak.android.ebookdownloader.SonyBookSelector;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -247,34 +243,9 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 
 	}
 
-	private DocView doc;
-
-	// additional key codes for Nook
-	public static final int NOOK_KEY_PREV_LEFT = 96;
-	public static final int NOOK_KEY_PREV_RIGHT = 98;
-	public static final int NOOK_KEY_NEXT_RIGHT = 97;
-	public static final int NOOK_KEY_SHIFT_UP = 101;
-	public static final int NOOK_KEY_SHIFT_DOWN = 100;
-
-	// nook 1 & 2
-	public static final int NOOK_12_KEY_NEXT_LEFT = 95;
-
-	// Nook touch buttons
-	public static final int KEYCODE_PAGE_BOTTOMLEFT = 0x5d; // fwd = 93 (
-	//    public static final int KEYCODE_PAGE_BOTTOMRIGHT = 158; // 0x5f; // fwd = 95
-	public static final int KEYCODE_PAGE_TOPLEFT = 0x5c; // back = 92
-	public static final int KEYCODE_PAGE_TOPRIGHT = 0x5e; // back = 94
-
-	public static final int SONY_DPAD_UP_SCANCODE = 105;
-	public static final int SONY_DPAD_DOWN_SCANCODE = 106;
-	public static final int SONY_DPAD_LEFT_SCANCODE = 125;
-	public static final int SONY_DPAD_RIGHT_SCANCODE = 126;
+	private final DocView doc;
 
 	public static final int KEYCODE_ESCAPE = 111; // KeyEvent constant since API 11
-
-	//    public static final int SONY_MENU_SCANCODE = 357;
-//    public static final int SONY_BACK_SCANCODE = 158;
-//    public static final int SONY_HOME_SCANCODE = 102;
 
 	public static final int PAGE_ANIMATION_NONE = 0;
 	public static final int PAGE_ANIMATION_PAPER = 1;
@@ -1254,7 +1225,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		public boolean onTouchEvent(MotionEvent event) {
 			int x = (int) event.getX();
 			int y = (int) event.getY();
-			if ((DeviceInfo.getSDKLevel() >= 19) && mActivity.isFullscreen() && (event.getAction() == MotionEvent.ACTION_DOWN)) {
+			if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && mActivity.isFullscreen() && (event.getAction() == MotionEvent.ACTION_DOWN)) {
 				if ((y < 30) || (y > (getSurface().getHeight() - 30)))
 					return unexpectedEvent();
 			}
@@ -1886,21 +1857,17 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 
 	public boolean getDocumentStylesEnabled() {
 		if (mOpened && mBookInfo != null) {
-			boolean flg = !mBookInfo.getFileInfo().getFlag(FileInfo.DONT_USE_DOCUMENT_STYLES_FLAG);
-			return flg;
+			return !mBookInfo.getFileInfo().getFlag(FileInfo.DONT_USE_DOCUMENT_STYLES_FLAG);
 		}
 		return true;
 	}
 
 	public boolean getDocumentFontsEnabled() {
 		if (mOpened && mBookInfo != null) {
-			boolean flg = mBookInfo.getFileInfo().getFlag(FileInfo.USE_DOCUMENT_FONTS_FLAG);
-			return flg;
+			return mBookInfo.getFileInfo().getFlag(FileInfo.USE_DOCUMENT_FONTS_FLAG);
 		}
 		return true;
 	}
-
-	static private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
 	public void showBookInfo() {
 		final ArrayList<String> items = new ArrayList<String>();
@@ -2672,10 +2639,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		final PositionProperties props = bmk != null ? doc.getPositionProps(bmk.getStartPos(), false) : null;
 		if (props != null) BackgroundThread.instance().postGUI(() -> {
 			mActivity.updateCurrentPositionStatus(fileInfo, bmk, props);
-
-			String fname = mBookInfo.getFileInfo().getBasePath();
-			if (fname != null && fname.length() > 0)
-				setBookPositionForExternalShell(fname, props.pageNumber, props.pageCount);
 		});
 	}
 
@@ -3302,8 +3265,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		}
 	}
 
-	private static final VMRuntimeHack runtime = new VMRuntimeHack();
-
 	private static class BitmapFactory {
 		public static final int MAX_FREE_LIST_SIZE = 2;
 		ArrayList<Bitmap> freeList = new ArrayList<Bitmap>();
@@ -3321,13 +3282,11 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				}
 			}
 			for (int i = freeList.size() - 1; i >= 0; i--) {
-				Bitmap bmp = freeList.remove(i);
-				runtime.trackAlloc(bmp.getWidth() * bmp.getHeight() * 2);
+				freeList.remove(i);
 				//log.d("Recycling free bitmap "+bmp.getWidth()+"x"+bmp.getHeight());
 				//bmp.recycle(); //20110109
 			}
 			Bitmap bmp = Bitmap.createBitmap(dx, dy, DeviceInfo.BUFFER_COLOR_FORMAT);
-			runtime.trackFree(dx * dy * 2);
 			//bmp.setDensity(0);
 			usedList.add(bmp);
 			//log.d("Created new bitmap "+dx+"x"+dy+". New bitmap list size = " + usedList.size());
@@ -3337,8 +3296,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		public synchronized void compact() {
 			while (freeList.size() > 0) {
 				//freeList.get(0).recycle();//20110109
-				Bitmap bmp = freeList.remove(0);
-				runtime.trackAlloc(bmp.getWidth() * bmp.getHeight() * 2);
+				freeList.remove(0);
 			}
 		}
 
@@ -3350,7 +3308,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					while (freeList.size() > MAX_FREE_LIST_SIZE) {
 						//freeList.get(0).recycle(); //20110109
 						Bitmap b = freeList.remove(0);
-						runtime.trackAlloc(b.getWidth() * b.getHeight() * 2);
 						//b.recycle();
 					}
 					log.d("BitmapFactory: bitmap released, used size = " + usedList.size() + ", free size=" + freeList.size());
@@ -3733,7 +3690,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 
 		if (hackMemorySize <= 0) {
 			hackMemorySize = width * height * 2;
-			runtime.trackFree(hackMemorySize);
 		}
 
 
@@ -3758,7 +3714,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		log.i("surfaceDestroyed()");
 		mSurfaceCreated = false;
 		if (hackMemorySize > 0) {
-			runtime.trackAlloc(hackMemorySize);
 			hackMemorySize = 0;
 		}
 	}
@@ -5314,29 +5269,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 					Services.getHistory().updateBookAccess(mBookInfo, getTimeElapsed());
 					final BookInfo finalBookInfo = new BookInfo(mBookInfo);
 					mActivity.waitForCRDBService(() -> mActivity.getDB().saveBookInfo(finalBookInfo));
-					if (coverPageBytes != null && mBookInfo.getFileInfo() != null) {
-						// TODO: fix it
-						/*
-						DocumentFormat format = mBookInfo.getFileInfo().format;
-						if (null != format) {
-							if (format.needCoverPageCaching()) {
-//			        			if (mActivity.getBrowser() != null)
-//			        				mActivity.getBrowser().setCoverpageData(new FileInfo(mBookInfo.getFileInfo()), coverPageBytes);
-							}
-						}
-						*/
-						if (DeviceInfo.EINK_NOOK)
-							updateNookTouchCoverpage(mBookInfo.getFileInfo().getPathName(), coverPageBytes);
-						//mEngine.setProgressDrawable(coverPageDrawable);
-					}
-					if (DeviceInfo.EINK_SONY) {
-						SonyBookSelector selector = new SonyBookSelector(mActivity);
-						long l = selector.getContentId(path);
-						if (l != 0) {
-							selector.setReadingTime(l);
-							selector.requestBookSelection(l);
-						}
-					}
 					mActivity.setLastBook(filename);
 				} else {
 					// Opened from memory buffer
@@ -5701,54 +5633,7 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 				}
 			}
 		});
-
-//    	if (DeviceInfo.EINK_SONY && isBookLoaded()) {
-//    		getCurrentPositionProperties(new PositionPropertiesCallback() {
-//				@Override
-//				public void onPositionProperties(PositionProperties props,
-//						String positionText) {
-//					// update position for Sony T2
-//					if (props != null && mBookInfo != null) {
-//						String fname = mBookInfo.getFileInfo().getBasePath();
-//						if (fname != null && fname.length() > 0)
-//							setBookPositionForExternalShell(fname, props.pageNumber, props.pageCount);
-//					}
-//				}
-//    		});
-//    	}
 	}
-
-	// Sony T2 update position method - by Jotas
-	public void setBookPositionForExternalShell(String filename, long current_page, long total_pages) {
-		if (DeviceInfo.EINK_SONY) {
-			log.d("Trying to update last book and position in Sony T2 shell: file=" + filename + " currentPage=" + current_page + " totalPages=" + total_pages);
-			File f = new File(filename);
-			if (f.exists()) {
-				String file_path = f.getAbsolutePath();
-				try {
-					file_path = f.getCanonicalPath();
-				} catch (Exception e) {
-					Log.d("cr3Sony", "setBookPosition getting filename/path", e);
-				}
-
-				try {
-					Uri uri = Uri.parse("content://com.sony.drbd.ebook.internal.provider/continuerea ding");
-					ContentValues contentvalues = new ContentValues();
-					contentvalues.put("file_path", file_path);
-					contentvalues.put("current_page", current_page);
-					contentvalues.put("total_pages", total_pages);
-					if (mActivity.getContentResolver().insert(uri, contentvalues) != null)
-						Log.d("cr3Sony", "setBookPosition: filename = " + filename + "start=" + current_page + "end=" + total_pages);
-					else
-						Log.d("crsony", "setBookPosition : error inserting in database!");
-
-				} catch (Exception e) {
-					Log.d("cr3Sony", "setBookPositon parse/values!", e);
-				}
-			}
-		}
-	}
-
 
 	public interface PositionPropertiesCallback {
 		void onPositionProperties(PositionProperties props, String positionText);
@@ -6215,73 +6100,6 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		}
 		log.i("Apply new profile settings");
 		mActivity.setCurrentProfile(profile);
-	}
-
-	private final static String NOOK_TOUCH_COVERPAGE_DIR = "/media/screensavers/currentbook";
-
-	private void updateNookTouchCoverpage(String bookFileName,
-										  byte[] coverpageBytes) {
-		try {
-			String imageFileName;
-			int lastSlash = bookFileName.lastIndexOf("/");
-			// exclude path and extension
-			if (lastSlash >= 0 && lastSlash < bookFileName.length()) {
-				imageFileName = bookFileName.substring(lastSlash);
-			} else {
-				imageFileName = bookFileName;
-			}
-			int lastDot = imageFileName.lastIndexOf(".");
-			if (lastDot > 0) {
-				imageFileName = imageFileName.substring(0, lastDot);
-			}
-			// guess image type
-			if (coverpageBytes.length > 8 // PNG signature length
-					&& coverpageBytes[0] == (byte) 0x89 // PNG signature start 4 bytes
-					&& coverpageBytes[1] == 0x50
-					&& coverpageBytes[2] == 0x4E
-					&& coverpageBytes[3] == 0x47) {
-				imageFileName += ".png";
-			} else if (coverpageBytes.length > 3 // Checking only the first 3
-					// bytes of JPEG header
-					&& coverpageBytes[0] == (byte) 0xFF
-					&& coverpageBytes[1] == (byte) 0xD8
-					&& coverpageBytes[2] == (byte) 0xFF) {
-				imageFileName += ".jpg";
-			} else if (coverpageBytes.length > 3 // Checking only the first 3
-					// bytes of GIF header
-					&& coverpageBytes[0] == 0x47
-					&& coverpageBytes[1] == 0x49
-					&& coverpageBytes[2] == 0x46) {
-				imageFileName += ".gif";
-			} else if (coverpageBytes.length > 2 // Checking only the first 2
-					// bytes of BMP signature
-					&& coverpageBytes[0] == 0x42 && coverpageBytes[1] == 0x4D) {
-				imageFileName += ".bmp";
-			} else {
-				imageFileName += ".jpg"; // default image type
-			}
-			// create directory if it does not exist
-			File d = new File(NOOK_TOUCH_COVERPAGE_DIR);
-			if (!d.exists()) {
-				d.mkdir();
-			}
-			// create file only if file with same name does not exist
-			File f = new File(d, imageFileName);
-			if (!f.exists()) {
-				// delete other files in directory so that only current cover is
-				// shown all the time
-				File[] files = d.listFiles();
-				for (File oldFile : files) {
-					oldFile.delete();
-				}
-				// write the image file
-				FileOutputStream fos = new FileOutputStream(f);
-				fos.write(coverpageBytes);
-				fos.close();
-			}
-		} catch (Exception ex) {
-			log.e("Error writing cover page: ", ex);
-		}
 	}
 
 	private static final int GC_INTERVAL = 15000; // 15 seconds

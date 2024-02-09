@@ -675,7 +675,7 @@
         https://www.fontconfig.org/ "
     </string>
     <string name="third_party_components_used">"Third party components used: zlib, libpng, libjpeg, freetype, harfbuzz, fribidi, utf8proc, zstd,
-        chmlib, antiword, Nook EPD utils by DairyKnight "
+        chmlib, antiword "
     </string>
     <string name="third_party_farm_fresh_icon_set">Farm-Fresh icon set from http://www.fatcow.com/free-icons</string>
     <string name="third_party_tango_mod_icon_set">High-contrast icons based on Tango Icon Library: http://tango.freedesktop.org/Tango_Icon_Library.</string>

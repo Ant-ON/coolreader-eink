@@ -918,89 +918,58 @@ public class OptionsDialog extends BaseDialog implements TabContentFactory, Opti
 				return;
 			BaseDialog dlg = new BaseDialog(mActivity, label, false, false);
 			OptionsListView listView = new OptionsListView(getContext());
-			if ( DeviceInfo.NOOK_NAVIGATION_KEYS ) {
-				addKey(listView, ReaderView.KEYCODE_PAGE_TOPLEFT, "Top left navigation button");
-				addKey(listView, ReaderView.KEYCODE_PAGE_BOTTOMLEFT, "Bottom left navigation button");
-				addKey(listView, ReaderView.KEYCODE_PAGE_TOPRIGHT, "Top right navigation button");
-				addKey(listView, ReaderView.NOOK_12_KEY_NEXT_LEFT, "Bottom right navigation button");
-//				addKey(listView, ReaderView.KEYCODE_PAGE_BOTTOMRIGHT, "Bottom right navigation button");
 
-				// on rooted Nook, side navigation keys may be reassigned on some standard android keycode
-				addKey(listView, KeyEvent.KEYCODE_MENU, "Menu");
-				addKey(listView, KeyEvent.KEYCODE_BACK, "Back");
-				addKey(listView, KeyEvent.KEYCODE_SEARCH, "Search");
-				
-				addKey(listView, KeyEvent.KEYCODE_HOME, "Home");
-				
-				addKey(listView, KeyEvent.KEYCODE_2, "Up");
-				addKey(listView, KeyEvent.KEYCODE_8, "Down");
-			} else if ( DeviceInfo.SONY_NAVIGATION_KEYS ) {
-//				addKey(listView, KeyEvent.KEYCODE_DPAD_UP, "Prev button");
-//				addKey(listView, KeyEvent.KEYCODE_DPAD_DOWN, "Next button");
-				addKey(listView, ReaderView.SONY_DPAD_UP_SCANCODE, "Prev button");
-				addKey(listView, ReaderView.SONY_DPAD_DOWN_SCANCODE, "Next button");
-				addKey(listView, ReaderView.SONY_DPAD_LEFT_SCANCODE, "Left button");
-				addKey(listView, ReaderView.SONY_DPAD_RIGHT_SCANCODE, "Right button");
-//				addKey(listView, ReaderView.SONY_MENU_SCANCODE, "Menu");
-//				addKey(listView, ReaderView.SONY_BACK_SCANCODE, "Back");
-//				addKey(listView, ReaderView.SONY_HOME_SCANCODE, "Home");
-				addKey(listView, KeyEvent.KEYCODE_MENU, "Menu");
-				addKey(listView, KeyEvent.KEYCODE_BACK, "Back");
-
-				addKey(listView, KeyEvent.KEYCODE_HOME, "Home");
+			EnumSet<KeyActionFlag> keyFlags;
+			if (DeviceInfo.EINK_ONYX && DeviceInfo.ONYX_BUTTONS_LONG_PRESS_NOT_AVAILABLE) {
+				keyFlags = EnumSet.of(
+						KeyActionFlag.KEY_ACTION_FLAG_NORMAL,
+						KeyActionFlag.KEY_ACTION_FLAG_DOUBLE
+				);
 			} else {
-				EnumSet<KeyActionFlag> keyFlags;
-				if (DeviceInfo.EINK_ONYX && DeviceInfo.ONYX_BUTTONS_LONG_PRESS_NOT_AVAILABLE) {
-				    keyFlags = EnumSet.of(
-				    		KeyActionFlag.KEY_ACTION_FLAG_NORMAL,
-							KeyActionFlag.KEY_ACTION_FLAG_DOUBLE
-					);
-				} else {
-					keyFlags = EnumSet.allOf(KeyActionFlag.class);
-				}
-
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_MENU))
-					addKey(listView, KeyEvent.KEYCODE_MENU, "Menu", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK))
-					addKey(listView, KeyEvent.KEYCODE_BACK, "Back", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_LEFT))
-					addKey(listView, KeyEvent.KEYCODE_DPAD_LEFT, "Left", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_RIGHT))
-					addKey(listView, KeyEvent.KEYCODE_DPAD_RIGHT, "Right", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_UP))
-					addKey(listView, KeyEvent.KEYCODE_DPAD_UP, "Up", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_DOWN))
-					addKey(listView, KeyEvent.KEYCODE_DPAD_DOWN, "Down", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_CENTER))
-					addKey(listView, KeyEvent.KEYCODE_DPAD_CENTER, "Center", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_SEARCH))
-					addKey(listView, KeyEvent.KEYCODE_SEARCH, "Search", keyFlags);
-				if (DeviceInfo.EINK_ONYX) {
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_UP))
-						addKey(listView, KeyEvent.KEYCODE_VOLUME_UP, "Left Side Button (Volume Up)", keyFlags);
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_DOWN))
-						addKey(listView, KeyEvent.KEYCODE_VOLUME_DOWN, "Right Side Button (Volume Down)", keyFlags);
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_UP))
-						addKey(listView, KeyEvent.KEYCODE_PAGE_UP, "Left Side Button", keyFlags);
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_DOWN))
-						addKey(listView, KeyEvent.KEYCODE_PAGE_DOWN, "Right Side Button", keyFlags);
-				}
-				else {
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_UP))
-						addKey(listView, KeyEvent.KEYCODE_VOLUME_UP, "Volume Up");
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_DOWN))
-						addKey(listView, KeyEvent.KEYCODE_VOLUME_DOWN, "Volume Down");
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_UP))
-						addKey(listView, KeyEvent.KEYCODE_PAGE_UP, "Page Up");
-					if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_DOWN))
-						addKey(listView, KeyEvent.KEYCODE_PAGE_DOWN, "Page Down");
-				}
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_CAMERA))
-					addKey(listView, KeyEvent.KEYCODE_CAMERA, "Camera", keyFlags);
-				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_ESCAPE))
-					addKey(listView, ReaderView.KEYCODE_ESCAPE, "Escape", keyFlags);
-				addKey(listView, KeyEvent.KEYCODE_HEADSETHOOK, "Headset Hook");
+				keyFlags = EnumSet.allOf(KeyActionFlag.class);
 			}
+
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_MENU))
+				addKey(listView, KeyEvent.KEYCODE_MENU, "Menu", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK))
+				addKey(listView, KeyEvent.KEYCODE_BACK, "Back", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_LEFT))
+				addKey(listView, KeyEvent.KEYCODE_DPAD_LEFT, "Left", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_RIGHT))
+				addKey(listView, KeyEvent.KEYCODE_DPAD_RIGHT, "Right", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_UP))
+				addKey(listView, KeyEvent.KEYCODE_DPAD_UP, "Up", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_DOWN))
+				addKey(listView, KeyEvent.KEYCODE_DPAD_DOWN, "Down", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_DPAD_CENTER))
+				addKey(listView, KeyEvent.KEYCODE_DPAD_CENTER, "Center", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_SEARCH))
+				addKey(listView, KeyEvent.KEYCODE_SEARCH, "Search", keyFlags);
+			if (DeviceInfo.EINK_ONYX) {
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_UP))
+					addKey(listView, KeyEvent.KEYCODE_VOLUME_UP, "Left Side Button (Volume Up)", keyFlags);
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_DOWN))
+					addKey(listView, KeyEvent.KEYCODE_VOLUME_DOWN, "Right Side Button (Volume Down)", keyFlags);
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_UP))
+					addKey(listView, KeyEvent.KEYCODE_PAGE_UP, "Left Side Button", keyFlags);
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_DOWN))
+					addKey(listView, KeyEvent.KEYCODE_PAGE_DOWN, "Right Side Button", keyFlags);
+			}
+			else {
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_UP))
+					addKey(listView, KeyEvent.KEYCODE_VOLUME_UP, "Volume Up");
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_VOLUME_DOWN))
+					addKey(listView, KeyEvent.KEYCODE_VOLUME_DOWN, "Volume Down");
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_UP))
+					addKey(listView, KeyEvent.KEYCODE_PAGE_UP, "Page Up");
+				if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_PAGE_DOWN))
+					addKey(listView, KeyEvent.KEYCODE_PAGE_DOWN, "Page Down");
+			}
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_CAMERA))
+				addKey(listView, KeyEvent.KEYCODE_CAMERA, "Camera", keyFlags);
+			if (KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_ESCAPE))
+				addKey(listView, ReaderView.KEYCODE_ESCAPE, "Escape", keyFlags);
+			addKey(listView, KeyEvent.KEYCODE_HEADSETHOOK, "Headset Hook");
 
 			dlg.setView(listView);
 			dlg.show();
@@ -2589,46 +2558,46 @@ public class OptionsDialog extends BaseDialog implements TabContentFactory, Opti
 		ViewGroup body = view.findViewById(R.id.body);
 
 		mOptionsTTS = new OptionsListView(getContext());
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			mTTSEngineOption = new ListOption(this, getString(R.string.options_tts_engine), PROP_APP_TTS_ENGINE);
-			mTTSBinder.retrieveAvailableEngines(list -> {
-				BackgroundThread.instance().executeGUI(() -> {
-					for (TextToSpeech.EngineInfo info : list) {
-						mTTSEngineOption.add(info.name, info.label);
-					}
-					String tts_package = mProperties.getProperty(PROP_APP_TTS_ENGINE, "");
-					mTTSEngineOption.setDefaultValue(tts_package);
-					mTTSEngineOption.refreshList();
-				});
-			});
-			mOptionsTTS.add(mTTSEngineOption.noIcon());
-			mTTSEngineOption.setOnChangeHandler(() -> {
+
+		mTTSEngineOption = new ListOption(this, getString(R.string.options_tts_engine), PROP_APP_TTS_ENGINE);
+		mTTSBinder.retrieveAvailableEngines(list -> {
+			BackgroundThread.instance().executeGUI(() -> {
+				for (TextToSpeech.EngineInfo info : list) {
+					mTTSEngineOption.add(info.name, info.label);
+				}
 				String tts_package = mProperties.getProperty(PROP_APP_TTS_ENGINE, "");
-				mTTSBinder.initTTS(tts_package, new OnTTSCreatedListener() {
-					@Override
-					public void onCreated() {
-						if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-							BackgroundThread.instance().executeGUI(() -> {
-								if (null != mTTSLanguageOption)
-									fillTTSLanguages(mTTSLanguageOption);
-								if (null != mTTSVoiceOption)
-									mTTSVoiceOption.clear();
-							});
-						}
-					}
-					@Override
-					public void onFailed() {
-						if (null != mTTSLanguageOption)
-							mTTSLanguageOption.clear();
-					}
-					@Override
-					public void onTimedOut() {
-						if (null != mTTSLanguageOption)
-							mTTSLanguageOption.clear();
-					}
-				});
+				mTTSEngineOption.setDefaultValue(tts_package);
+				mTTSEngineOption.refreshList();
 			});
-		}
+		});
+		mOptionsTTS.add(mTTSEngineOption.noIcon());
+		mTTSEngineOption.setOnChangeHandler(() -> {
+			String tts_package = mProperties.getProperty(PROP_APP_TTS_ENGINE, "");
+			mTTSBinder.initTTS(tts_package, new OnTTSCreatedListener() {
+				@Override
+				public void onCreated() {
+					if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+						BackgroundThread.instance().executeGUI(() -> {
+							if (null != mTTSLanguageOption)
+								fillTTSLanguages(mTTSLanguageOption);
+							if (null != mTTSVoiceOption)
+								mTTSVoiceOption.clear();
+						});
+					}
+				}
+				@Override
+				public void onFailed() {
+					if (null != mTTSLanguageOption)
+						mTTSLanguageOption.clear();
+				}
+				@Override
+				public void onTimedOut() {
+					if (null != mTTSLanguageOption)
+						mTTSLanguageOption.clear();
+				}
+			});
+		});
+
 		mTTSUseDocLangOption = new BoolOption(this, getString(R.string.options_tts_use_doc_lang), PROP_APP_TTS_USE_DOC_LANG).setDefaultValue("1").noIcon();
 		mOptionsTTS.add(mTTSUseDocLangOption);
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
@@ -2655,8 +2624,7 @@ public class OptionsDialog extends BaseDialog implements TabContentFactory, Opti
 			mOptionsTTS.add(mTTSVoiceOption);
 		}
 		mOptionsTTS.add(new BoolOption(this, getString(R.string.options_tts_google_abbr_workaround), PROP_APP_TTS_GOOGLE_END_OF_SENTENCE_ABBR).setComment(getString(R.string.options_tts_google_abbr_workaround_comment)).setDefaultValue("1").noIcon());
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR)
-			mOptionsTTS.add(new ListOption(this, getString(R.string.options_app_tts_stop_motion_timeout), PROP_APP_MOTION_TIMEOUT).add(mMotionTimeouts, mMotionTimeoutsTitles).setDefaultValue(Integer.toString(mMotionTimeouts[0])).noIcon());
+		mOptionsTTS.add(new ListOption(this, getString(R.string.options_app_tts_stop_motion_timeout), PROP_APP_MOTION_TIMEOUT).add(mMotionTimeouts, mMotionTimeoutsTitles).setDefaultValue(Integer.toString(mMotionTimeouts[0])).noIcon());
 		mOptionsTTS.refresh();
 		body.addView(mOptionsTTS);
 		setView(view);
@@ -2843,10 +2811,7 @@ public class OptionsDialog extends BaseDialog implements TabContentFactory, Opti
 				})
 		);
 		//mOptionsPage.add(new ListOption(getString(R.string.options_page_orientation), PROP_ROTATE_ANGLE).add(mOrientations, mOrientationsTitles).setDefaultValue("0"));
-		if (DeviceInfo.getSDKLevel() >= 9)
-			mOptionsPage.add(new ListOption(this, getString(R.string.options_page_orientation), PROP_APP_SCREEN_ORIENTATION).add(mOrientations_API9, mOrientationsTitles_API9).setDefaultValue("0").setIconIdByAttr(R.attr.cr3_option_page_orientation_landscape_drawable, R.drawable.cr3_option_page_orientation_landscape));
-		else
-			mOptionsPage.add(new ListOption(this, getString(R.string.options_page_orientation), PROP_APP_SCREEN_ORIENTATION).add(mOrientations, mOrientationsTitles).setDefaultValue("0").setIconIdByAttr(R.attr.cr3_option_page_orientation_landscape_drawable, R.drawable.cr3_option_page_orientation_landscape));
+		mOptionsPage.add(new ListOption(this, getString(R.string.options_page_orientation), PROP_APP_SCREEN_ORIENTATION).add(mOrientations_API9, mOrientationsTitles_API9).setDefaultValue("0").setIconIdByAttr(R.attr.cr3_option_page_orientation_landscape_drawable, R.drawable.cr3_option_page_orientation_landscape));
 		mOptionsPage.add(new ListOption(this, getString(R.string.options_page_landscape_pages), PROP_LANDSCAPE_PAGES).add(mLandscapePages, mLandscapePagesTitles).setDefaultValue("1").setIconIdByAttr(R.attr.cr3_option_pages_two_drawable, R.drawable.cr3_option_pages_two));
 		mOptionsPage.add(new NightModeOption(this, getString(R.string.options_inverse_view), PROP_NIGHT_MODE).setIconIdByAttr(R.attr.cr3_option_night_drawable, R.drawable.cr3_option_night));
 		mOptionsPage.add(new ColorOption(this, getString(R.string.options_color_text), PROP_FONT_COLOR, 0x000000).setIconId(R.drawable.cr3_option_font_color));
@@ -2953,7 +2918,7 @@ public class OptionsDialog extends BaseDialog implements TabContentFactory, Opti
 		mOptionsApplication.add(new BoolOption(this, getString(R.string.mi_book_browser_simple_mode), PROP_APP_FILE_BROWSER_SIMPLE_MODE).noIcon());
 		/*
 		  Commented until the appearance of free implementation of the binding to the Google Drive (R)
-		if (BuildConfig.GSUITE_AVAILABLE && DeviceInfo.getSDKLevel() >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+		if (BuildConfig.GSUITE_AVAILABLE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			mOptionsCloudSync = new OptionsListView(getContext());
 			Runnable onGoogleDriveEnable = () -> {
 				boolean syncEnabled = mProperties.getBool(PROP_APP_CLOUDSYNC_GOOGLEDRIVE_ENABLED, false);
@@ -3016,15 +2981,13 @@ public class OptionsDialog extends BaseDialog implements TabContentFactory, Opti
 	private void addTab(String name, int imageDrawable) {
 		TabHost.TabSpec ts = mTabs.newTabSpec(name);
 		Drawable icon = getContext().getResources().getDrawable(imageDrawable);
-		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
-			// replace too small icons in tabs in Theme.Holo
-			View tabIndicator = mInflater.inflate(R.layout.tab_indicator, null);
-			ImageView imageView = tabIndicator.findViewById(R.id.tab_icon);
-			imageView.setImageDrawable(icon);
-			ts.setIndicator(tabIndicator);
-		} else {
-			ts.setIndicator("", icon);
-		}
+
+		// replace too small icons in tabs in Theme.Holo
+		View tabIndicator = mInflater.inflate(R.layout.tab_indicator, null);
+		ImageView imageView = tabIndicator.findViewById(R.id.tab_icon);
+		imageView.setImageDrawable(icon);
+		ts.setIndicator(tabIndicator);
+
 		ts.setContent(this);
 		mTabs.addTab(ts);
 	}

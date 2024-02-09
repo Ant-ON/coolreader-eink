@@ -648,7 +648,7 @@
         https://www.fontconfig.org/
     </string>
     <string name="third_party_components_used">Использованы следующие компоненты третьих сторон: zlib, libpng, libjpeg, fribidi, utf8proc, zstd,
-        freetype, harfbuzz, chmlib, antiword, Nook EPD utils от DairyKnight
+        freetype, harfbuzz, chmlib, antiword
     </string>
     <string name="third_party_tango_mod_icon_set">Высококонтрастные значки основаны на Tango Icon Library: http://tango.freedesktop.org/Tango_Icon_Library</string>
     <string name="options_rendering_preset">Опции рендеринга</string>

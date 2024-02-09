@@ -190,9 +190,6 @@ public class CoverpageManager {
 		DRAWING,
 		READY,
 	}
-	
-	// hack for heap size limit
-	private static final VMRuntimeHack runtime = new VMRuntimeHack();
 
 	private class BitmapCacheItem {
 		private final ImageItem file;
@@ -215,15 +212,9 @@ public class CoverpageManager {
 			if (bitmap != null)
 				removed();
 			bitmap = bmp;
-			if (bitmap != null) {
-				int bytes = bitmap.getRowBytes() * bitmap.getHeight();
-				runtime.trackFree(bytes); // hack for heap size limit
-			}
 		}
 		private void removed() {
 			if (bitmap != null) {
-				int bytes = bitmap.getRowBytes() * bitmap.getHeight();
-				runtime.trackAlloc(bytes); // hack for heap size limit
 				bitmap.recycle();
 				bitmap = null;
 			}
