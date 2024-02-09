@@ -137,6 +137,7 @@ public class CoolReader extends BaseActivity {
 	private boolean justCreated = false;
 	private boolean activityIsRunning = false;
 	private boolean isInterfaceCreated = false;
+	public boolean exitByBack = false;
 
 	private boolean dataDirIsRemoved = false;
 
@@ -760,8 +761,10 @@ public class CoolReader extends BaseActivity {
 		}
 		if (fileToOpen == null && intent.getExtras() != null) {
 			log.d("extras=" + intent.getExtras());
-			fileToOpen = intent.getExtras().getString(OPEN_FILE_PARAM);
-		}
+			fileToOpen = intent.getStringExtra(OPEN_FILE_PARAM);
+			exitByBack = intent.getBooleanExtra("EXIT_BY_BACK", false);
+		} else
+			exitByBack = false;
 		if (fileToOpen != null) {
 			mFileToOpenFromExt = fileToOpen;
 			log.d("FILE_TO_OPEN = " + fileToOpen);

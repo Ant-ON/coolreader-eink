@@ -23,6 +23,7 @@ package org.coolreader.crengine;
 
 import android.os.Handler;
 
+import org.coolreader.CoolReaderApp;
 import org.coolreader.genrescollection.GenresCollection;
 
 public class Services {
@@ -68,9 +69,9 @@ public class Services {
 	}
 
 	public static GenresCollection getGenresCollection() {
-		if (null != mGenresCollection)
-			return mGenresCollection;
-		throw new RuntimeException("Services.getGenresCollection(): trying to get null object");
+		if (null == mGenresCollection)
+			mGenresCollection = GenresCollection.getInstance(CoolReaderApp.get());
+		return mGenresCollection;
 	}
 
 	public static DocumentFileCache getDocumentCache() {

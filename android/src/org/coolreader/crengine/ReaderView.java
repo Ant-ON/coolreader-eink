@@ -6317,7 +6317,13 @@ public class ReaderView implements android.view.SurfaceHolder.Callback, Settings
 		Long keyDownTs = keyDownTimestampMap.get(keyCode);
 		if (keyDownTs != null && System.currentTimeMillis() - keyDownTs >= LONG_KEYPRESS_TIME)
 			isLongPress = true;
-		ReaderAction action = ReaderAction.findForKey(keyCode, mSettings);
+		ReaderAction action;
+		if (keyCode == KeyEvent.KEYCODE_BACK && mActivity.exitByBack)
+		{
+			action = ReaderAction.EXIT;
+			mActivity.exitByBack = false;
+		}else
+			action = ReaderAction.findForKey(keyCode, mSettings);
 		ReaderAction longAction = ReaderAction.findForLongKey(keyCode, mSettings);
 		ReaderAction dblAction = ReaderAction.findForDoubleKey(keyCode, mSettings);
 		stopTracking();
