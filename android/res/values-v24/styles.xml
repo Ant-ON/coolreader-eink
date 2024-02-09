@@ -304,8 +304,8 @@
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:colorBackground">@android:color/white</item>
         <!-- item name="android:textColor">@android:color/black</item -->
-        <item name="android:listViewStyle">@style/ListView.White</item>
-        <item name="android:listViewWhiteStyle">@style/ListView.White</item>
+        <item name="android:listViewStyle">@style/ListView.HC1</item>
+        <item name="android:listViewWhiteStyle">@style/ListView.HC1</item>
         <item name="android:checkboxStyle">@style/CheckBox.HC.Light</item>
         <item name="android:radioButtonStyle">@style/RadioButton.HC.Light</item>
         <item name="android:switchStyle">@style/Switch.HC.Light</item>
@@ -415,6 +415,12 @@
         <item name="folder_big_drawable">@drawable/folder_big_hc</item>
         <item name="folder_big_bookmark_drawable">@drawable/folder_big_bookmark_hc</item>
         <item name="media_flash_microsd_drawable">@drawable/media_flash_microsd</item>
+
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:alertDialogTheme">@style/AlertDialog.HC.Light</item>
+        <item name="android:popupMenuStyle">@style/PopupWindow.HC.Light</item>
+        <item name="android:listPopupWindowStyle">@style/PopupWindow.HC.Light</item>
+        <item name="android:contextPopupMenuStyle">@style/ListPopupWindow.HC.Light</item>
     </style>
 
     <style name="Theme.HiContrast2" parent="@android:style/Theme.Material">
